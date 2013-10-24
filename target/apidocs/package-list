@@ -1,0 +1,16 @@
+eu.socialsensor.documentpivot
+eu.socialsensor.documentpivot.LSH
+eu.socialsensor.documentpivot.dfidft
+eu.socialsensor.documentpivot.dyscoutils
+eu.socialsensor.documentpivot.model
+eu.socialsensor.documentpivot.preprocessing
+eu.socialsensor.documentpivot.termfeature
+eu.socialsensor.documentpivot.termlikelihood
+eu.socialsensor.documentpivot.termvector
+eu.socialsensor.documentpivot.utils
+eu.socialsensor.documentpivot.vocabulary
+eu.socialsensor.graphbased
+eu.socialsensor.graphbased.clust
+eu.socialsensor.lda
+eu.socialsensor.sfim
+eu.socialsensor.topicdetection
