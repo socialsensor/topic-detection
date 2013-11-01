@@ -116,8 +116,9 @@ public class TweetPreprocessor {
     public static List<String> getURLsFromItem(Item item){
         List<String> urlsSet=new ArrayList<String>();
         URL[] urls=item.getLinks();
-        for(int i=0;i<urls.length;i++)
-            urlsSet.add(urls[i].toString());
+        if(urls!=null)
+            for(int i=0;i<urls.length;i++)
+                urlsSet.add(urls[i].toString());
         return urlsSet;
     }
     

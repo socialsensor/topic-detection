@@ -21,6 +21,6 @@ public class Constants {
     public static String C_SIGMOID="C_SIGMOID";
     public static enum TERM_SELECTION_TYPES {RATIO_THRESHOLD,TOP_N,TOP_PERCENTAGE};
 
-    public static BasicConfiguration configuration;
+    public static eu.socialsensor.topicdetection.BasicConfiguration configuration;
     
 }

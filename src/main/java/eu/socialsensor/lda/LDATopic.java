@@ -14,7 +14,7 @@ import eu.socialsensor.framework.common.domain.dysco.Ngram;
 public class LDATopic
 {
 	private String title;
-	private List<Ngram> keywords;
+	private List<String> keywords;
 	private List<Item> representativeDocuments;
 	
 	/**
@@ -23,7 +23,7 @@ public class LDATopic
 	public LDATopic()
 	{
 		this.title = "";
-		this.keywords = new LinkedList<Ngram>();
+		this.keywords = new LinkedList<String>();
 		this.representativeDocuments = new LinkedList<Item>();
 	}
 	
@@ -33,7 +33,7 @@ public class LDATopic
 	 * @param keywords the weighted list of keywords that define the topic
 	 * @param representativeDocuments a list of documents that most represent the topic
 	 */
-	public LDATopic(String title, List<Ngram> keywords, List<Item> representativeDocuments)
+	public LDATopic(String title, List<String> keywords, List<Item> representativeDocuments)
 	{
 		this.title = title;
 		this.keywords = keywords;
@@ -62,7 +62,7 @@ public class LDATopic
 	 * Gets the weighted list of keywords that define the topic
 	 * @return the list of keywords
 	 */
-	public List<Ngram> getKeywords()
+	public List<String> getKeywords()
 	{
 		return keywords;
 	}
@@ -71,7 +71,7 @@ public class LDATopic
 	 * Sets the weighted list of keywords that define the topic
 	 * @param keywords the list of keywords
 	 */
-	public void setKeywords(List<Ngram> keywords)
+	public void setKeywords(List<String> keywords)
 	{
 		this.keywords = keywords;
 	}
@@ -98,9 +98,9 @@ public class LDATopic
 	{
 		String repr = "Title: "+this.title+"\n";
 		repr = repr + "Keywords:";
-		for (Ngram n : this.keywords)
+		for (String n : this.keywords)
 		{
-			repr = repr + " " + n.getTerm() + "" + n.getScore();
+			repr = repr + " " + n;
 		}
 		repr = repr + "\n";
 		repr = repr + "Representative Docs:";

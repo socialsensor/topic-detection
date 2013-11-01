@@ -24,14 +24,9 @@ public class Configuration extends BasicConfiguration {
     
     public Properties getConfig(){
         if(config==null){
-//            ClassLoader loader=ClassLoader.getSystemClassLoader ();
+            ClassLoader loader=ClassLoader.getSystemClassLoader ();
             InputStream in = null;
-            try {
-                //          in = loader.getResourceAsStream ("graph_parameters.properties");
-                in = new FileInputStream("graph_parameters.properties");
-            } catch (FileNotFoundException ex) {
-                Logger.getLogger(Configuration.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            in = loader.getResourceAsStream ("graph_parameters.properties");
             if (in != null)
             {
                 config = new Properties ();

@@ -57,7 +57,7 @@ public class DyscoCreator {
     
     
     public DyscoCreator() {
-        Constants.configuration=new eu.socialsensor.graphbased.Configuration();
+        eu.socialsensor.graphbased.Constants.configuration=new eu.socialsensor.graphbased.Configuration();
     }
 
     

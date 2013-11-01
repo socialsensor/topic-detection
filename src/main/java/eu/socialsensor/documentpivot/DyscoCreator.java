@@ -30,6 +30,12 @@ public class DyscoCreator {
     private static double similarity_threshold = 0.1;
     private static double def_similarity_threshold = 0.1;
 
+    public DyscoCreator() {
+        eu.socialsensor.documentpivot.Constants.configuration=new eu.socialsensor.documentpivot.Configuration();
+    }
+    
+    
+    
     /*
      * Takes as input a list of items and a similarity threshold and returns a
      * list of DySCOs
@@ -80,15 +86,14 @@ public class DyscoCreator {
             Dysco dysco = new Dysco();
             dysco.setId(UUID.randomUUID().toString());
             dysco.setTitle("");
-            List<Ngram> keywords = new ArrayList<Ngram>();
+            List<String> keywords = new ArrayList<String>();
             List<Item> assigned_posts = new ArrayList<Item>();
             for (String tmp_str : tmp_entry.getValue()) {
                 tmp_post = postsList.get(tmp_str);
                 assigned_posts.add(tmp_post);
-                Ngram tmp_ngram = new Ngram(tmp_str, 0.0f);
-                keywords.add(tmp_ngram);
+                //keywords.add(tmp_str);
             }
-            dysco.setNgrams(keywords);
+            dysco.setKeywords(keywords);
             dysco.setItems(assigned_posts);
             dysco.setScore(assigned_posts.size());
             if (assigned_posts.size() > 0) {
@@ -143,13 +148,7 @@ public class DyscoCreator {
                     }
                 }
             }
-            List<Ngram> ngrams = new ArrayList<Ngram>();
-
-            for (String tmp_str : keywords) {
-                Ngram tmp_ngram = new Ngram(tmp_str, null);
-                ngrams.add(tmp_ngram);
-            }
-            tmp_dysco.setNgrams(ngrams);
+            tmp_dysco.setKeywords(new ArrayList<String>(keywords));
 
 
         }

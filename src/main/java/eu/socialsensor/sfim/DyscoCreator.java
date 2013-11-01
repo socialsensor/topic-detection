@@ -25,6 +25,11 @@ import java.util.Map;
   */
 public class DyscoCreator {
 
+    public DyscoCreator() {
+        eu.socialsensor.sfim.Constants.configuration=new eu.socialsensor.sfim.Configuration();
+    }
+    
+    
     public List<Dysco> createDyscos(List<Item> items) {
         Map<String,Item> items_map=new HashMap<String,Item>();
         for(int i=0;i<items.size();i++)

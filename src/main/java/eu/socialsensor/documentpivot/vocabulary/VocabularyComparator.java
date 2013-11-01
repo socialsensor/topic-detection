@@ -21,7 +21,6 @@ import eu.socialsensor.graphbased.clust.ScanCommunityStructure;
 import eu.socialsensor.documentpivot.Utilities;
 import eu.socialsensor.documentpivot.Constants;
 import eu.socialsensor.framework.common.domain.Item;
-import eu.socialsensor.framework.common.domain.dysco.Ngram;
 import org.apache.lucene.index.Term;
 /**
  *
@@ -106,7 +105,9 @@ public class VocabularyComparator {
             List<Dysco> dyscos=new ArrayList<Dysco>();
             //First filter the nodes
             double term_threshold=0;
-            
+
+            if(eu.socialsensor.sfim.Constants.configuration==null)
+                System.out.println("conf is null");
             String term_selection_type_string=Utilities.readProperty(eu.socialsensor.sfim.Constants.TERM_SELECTION_METHOD,eu.socialsensor.sfim.Constants.configuration.getConfig());
             Constants.TERM_SELECTION_TYPES term_selection_type=Constants.TERM_SELECTION_TYPES.valueOf(term_selection_type_string);
             if(term_selection_type==Constants.TERM_SELECTION_TYPES.RATIO_THRESHOLD)
@@ -218,20 +219,17 @@ public class VocabularyComparator {
                 
                 if(tmp_topic_terms.size()>=min_topic_size){
                     Dysco tmp_dysco=new Dysco();
-                    List<Ngram> keywords=new ArrayList<Ngram>();
+                    List<String> keywords=new ArrayList<String>();
                     List<Item> rel_items=new ArrayList<Item>();
-                    for(TermLikelihood  tmp_tl:tmp_topic_terms){
-                        String tmp_str=tmp_tl.term.name;
-                        Ngram tmp_ngram=new Ngram(tmp_str,0.0f);
-                        keywords.add(tmp_ngram);
-                    }
+                    for(TermLikelihood  tmp_tl:tmp_topic_terms)
+                        keywords.add(tmp_tl.term.name);
                     for(String tmp_id:working_term.term.docs.keySet()){
                         Item next_rel_item=items_map.get(tmp_id);
                         if(next_rel_item!=null)
                             rel_items.add(next_rel_item);
                     }
                     tmp_dysco.setScore((float) working_term.term.length());
-                    tmp_dysco.setNgrams(keywords);
+                    tmp_dysco.setKeywords(keywords);
                     tmp_dysco.setId(UUID.randomUUID().toString());
                     tmp_dysco.setItems(rel_items);
                     dyscos.add(tmp_dysco);
@@ -283,9 +281,15 @@ public class VocabularyComparator {
                    
             if(USED_TERM_SELECTION_TYPE==eu.socialsensor.graphbased.Constants.TERM_SELECTION_TYPES.RATIO_THRESHOLD)
                 term_threshold=Double.parseDouble(Utilities.readProperty(eu.socialsensor.graphbased.Constants.TERM_SELECTION_RATIO_THRESHOLD,eu.socialsensor.graphbased.Constants.configuration.getConfig()));
-            if(USED_TERM_SELECTION_TYPE==eu.socialsensor.graphbased.Constants.TERM_SELECTION_TYPES.TOP_N)
+            if(USED_TERM_SELECTION_TYPE==eu.socialsensor.graphbased.Constants.TERM_SELECTION_TYPES.TOP_N){
 //                term_threshold=terms.get(terms.size()-Constants.TERM_SELECTION_TOP_N+1).likelihood_ratio;
-                term_threshold=terms.get(Integer.parseInt(Utilities.readProperty(eu.socialsensor.graphbased.Constants.TERM_SELECTION_TOP_N,eu.socialsensor.graphbased.Constants.configuration.getConfig()))+1).likelihood_ratio;
+                int top_n_num=Integer.parseInt(Utilities.readProperty(eu.socialsensor.graphbased.Constants.TERM_SELECTION_TOP_N,eu.socialsensor.graphbased.Constants.configuration.getConfig()));
+                if(top_n_num>=terms.size()){
+                    System.out.println("Caution! Top_n parameter larger than number of terms in corpus. Defaulting to number of terms");
+                    top_n_num=terms.size()-1;
+                }
+                term_threshold=terms.get(top_n_num).likelihood_ratio;
+            }
             if(USED_TERM_SELECTION_TYPE==eu.socialsensor.graphbased.Constants.TERM_SELECTION_TYPES.TOP_PERCENTAGE)
 //                term_threshold=terms.get((int) Math.round(Constants.TERM_SELECTION_TOP_PERCENTAGE*terms.size())+1).likelihood_ratio;
                 term_threshold=terms.get((int) Math.round(Double.parseDouble(Utilities.readProperty(eu.socialsensor.graphbased.Constants.TERM_SELECTION_TOP_PERCENTAGE,eu.socialsensor.graphbased.Constants.configuration.getConfig()))*terms.size())).likelihood_ratio;
@@ -433,8 +437,8 @@ public class VocabularyComparator {
         double scan_epsilon=0.7;
         int scan_mu=3;
         
-        scan_epsilon=Double.parseDouble(Utilities.readProperty(eu.socialsensor.graphbased.Constants.SCAN_EPSILON,eu.socialsensor.sfim.Constants.configuration.getConfig()));
-        scan_mu=Integer.parseInt(Utilities.readProperty(eu.socialsensor.graphbased.Constants.SCAN_MU,eu.socialsensor.sfim.Constants.configuration.getConfig()));
+        scan_epsilon=Double.parseDouble(Utilities.readProperty(eu.socialsensor.graphbased.Constants.SCAN_EPSILON,eu.socialsensor.graphbased.Constants.configuration.getConfig()));
+        scan_mu=Integer.parseInt(Utilities.readProperty(eu.socialsensor.graphbased.Constants.SCAN_MU,eu.socialsensor.graphbased.Constants.configuration.getConfig()));
         
         
         
@@ -455,20 +459,19 @@ public class VocabularyComparator {
               int n_members=tmp_comm.getNumberOfMembers();
               Dysco tmp_dysco=new Dysco();
               dyscos.add(tmp_dysco);
-              List<Ngram> keywords=tmp_dysco.getNgrams();
+              List<String> keywords=tmp_dysco.getKeywords();
               for(j=0;j<n_members;j++){
                     TermLikelihood tmp_word_feat=tmp_comm.getMembers().get(j);
-                    int pos=0;
-                    while((terms.get(pos)!=tmp_word_feat)&&(pos<n_terms)) pos++;
-                   keywords.add(new Ngram(tmp_word_feat.term.name,null));
+                   keywords.add(tmp_word_feat.term.name);
               }
+              
               }
         }
         
         int n_hubs=structure.getHubs().size();
 
         double hub_linking_threshold=0.1;
-        hub_linking_threshold=Double.parseDouble(Utilities.readProperty(eu.socialsensor.graphbased.Constants.HUB_LINKING_THRESHOLD,eu.socialsensor.sfim.Constants.configuration.getConfig()));
+        hub_linking_threshold=Double.parseDouble(Utilities.readProperty(eu.socialsensor.graphbased.Constants.HUB_LINKING_THRESHOLD,eu.socialsensor.graphbased.Constants.configuration.getConfig()));
         
         for(i=0;i<n_hubs;i++){
             TermLikelihood tmp_hub=structure.getHubs().get(i);

@@ -128,14 +128,13 @@ public class LDA
         for(int topicId=0; topicId<words.length; topicId++)
         {
         	LDATopic topic = new LDATopic();
-        	LinkedList<Ngram> keywords = new LinkedList<Ngram>();
+        	LinkedList<String> keywords = new LinkedList<String>();
         	double i = 1.0;
         	for(int wordId=0; wordId<words[topicId].length; wordId++)
         	{
         		String keyword = (String)words[topicId][wordId];
         		double score = i;
-        		Ngram n = new Ngram(keyword, new Float(score));
-        		keywords.add(n);
+        		keywords.add(keyword);
         		i = i/2;
         	}
         	topic.setKeywords(keywords);

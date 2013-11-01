@@ -43,6 +43,7 @@ public class DyscoCreator implements GenericDyscoCreator
 		this.numTopics = numTopics;
 		this.numIterations = numIterations;
 		this.numKeywords = numKeywords;
+                eu.socialsensor.lda.Constants.configuration=new eu.socialsensor.lda.Configuration();
 	}
 	
 	/**
@@ -61,13 +62,13 @@ public class DyscoCreator implements GenericDyscoCreator
     		for (LDATopic t : topics)
     		{
 	    		String title = t.getTitle();
-	    		List<Ngram> keywords = t.getKeywords();
+	    		List<String> keywords = t.getKeywords();
 	    		List<Item> representativeDocuments = t.getRepresentativeDocuments();
 	    		
 	    		Dysco dysco = new Dysco();
 	    		dysco.setId(UUID.randomUUID().toString());
 	    		dysco.setTitle(title);
-	    		dysco.setNgrams(keywords);
+	    		dysco.setKeywords(keywords);
 	    		dysco.setItems(representativeDocuments);
 	    		
 	    		dyscoList.add(dysco);
