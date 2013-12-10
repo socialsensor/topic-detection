@@ -4,7 +4,6 @@
  */
 package eu.socialsensor.documentpivot.vocabulary;
 
-import eu.socialsensor.documentpivot.dfidft.DFIDFTDirectory;
 import java.io.*;
 import java.util.*;
 import eu.socialsensor.documentpivot.termfeature.TermFeature;
@@ -219,16 +218,16 @@ public class VocabularyComparator {
                 
                 if(tmp_topic_terms.size()>=min_topic_size){
                     Dysco tmp_dysco=new Dysco();
-                    List<String> keywords=new ArrayList<String>();
+                    Map<String,Double> keywords=new HashMap<String,Double>();
                     List<Item> rel_items=new ArrayList<Item>();
                     for(TermLikelihood  tmp_tl:tmp_topic_terms)
-                        keywords.add(tmp_tl.term.name);
+                        keywords.put(tmp_tl.term.name,new Double(tmp_tl.term.docs.size()));
                     for(String tmp_id:working_term.term.docs.keySet()){
                         Item next_rel_item=items_map.get(tmp_id);
                         if(next_rel_item!=null)
                             rel_items.add(next_rel_item);
                     }
-                    tmp_dysco.setScore((float) working_term.term.length());
+                    tmp_dysco.setScore((double) working_term.term.length());
                     tmp_dysco.setKeywords(keywords);
                     tmp_dysco.setId(UUID.randomUUID().toString());
                     tmp_dysco.setItems(rel_items);
@@ -238,7 +237,7 @@ public class VocabularyComparator {
             
         Collections.sort(dyscos, new Comparator<Dysco>() {
         @Override public int compare(Dysco p1, Dysco p2) {
-            return (int) (p2.getScore() - p1.getScore());
+            return (new Double(p2.getScore() - p1.getScore())).intValue();
         }});
 
         List<Dysco> topicsToRemove=new ArrayList<Dysco>();
@@ -456,15 +455,14 @@ public class VocabularyComparator {
         for(i=0;i<n_communities;i++){
               Community<TermLikelihood,MyLink> tmp_comm=structure.getCommunity(i);
               if(tmp_comm!=null){
-              int n_members=tmp_comm.getNumberOfMembers();
-              Dysco tmp_dysco=new Dysco();
-              dyscos.add(tmp_dysco);
-              List<String> keywords=tmp_dysco.getKeywords();
-              for(j=0;j<n_members;j++){
-                    TermLikelihood tmp_word_feat=tmp_comm.getMembers().get(j);
-                   keywords.add(tmp_word_feat.term.name);
-              }
-              
+                int n_members=tmp_comm.getNumberOfMembers();
+                Dysco tmp_dysco=new Dysco();
+                dyscos.add(tmp_dysco);
+                Map<String,Double> keywords=tmp_dysco.getKeywords();
+                for(j=0;j<n_members;j++){
+                        TermLikelihood tmp_word_feat=tmp_comm.getMembers().get(j);
+                    keywords.put(tmp_word_feat.term.name,tmp_word_feat.term.length());
+                }
               }
         }
         
@@ -485,10 +483,10 @@ public class VocabularyComparator {
                         if(similarity>hub_linking_threshold)
                             for(k=0;k<dyscos.size();k++){
                                 Dysco tmp_dysco=dyscos.get(k);
-                                if((tmp_dysco.getKeywords().contains(tmp_neighbour))&&(!tmp_dysco.getKeywords().contains(tmp_hub))){
+                                if((tmp_dysco.getKeywords().keySet().contains(tmp_neighbour))&&(!tmp_dysco.getKeywords().keySet().contains(tmp_hub))){
                                     int pos=0;
                                     while((terms.get(pos)!=tmp_hub)&&(pos<n_terms)) pos++;
-                                    tmp_dysco.getKeywords().add(tmp_hub.term.name);
+                                    tmp_dysco.getKeywords().put(tmp_hub.term.name,new Double(tmp_hub.term.docs.size()));
                                 }
                             }
                     }

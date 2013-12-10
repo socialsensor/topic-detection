@@ -182,6 +182,11 @@
             <artifactId>jung-io</artifactId>
             <version>2.0.1</version>
         </dependency>
+        <dependency>
+            <groupId>eu.socialsensor</groupId>
+            <artifactId>KeywordExtractor</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency> 
     </dependencies>
     
     <repositories>
@@ -193,6 +198,35 @@
             <id>msel.releases</id>
             <url>http://maven.mse.jhu.edu/m2repository</url>
         </repository>
+        <repository>
+            <id>sonatype-nexus-snapshots</id>
+            <name>Sonatype Nexus Snapshots</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>prometheus-atc-releases</id>
+            <name>prometheus-atc-releases</name>
+            <url> http://prometheus.atc.gr:8080/nexus/content/repositories/releases/</url>
+            <releases>
+                <updatePolicy>always</updatePolicy>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+        <repository>
+            <id>prometheus-atc-snapshots</id>
+            <name>prometheus-atc-snapshots</name>
+            <url>http://prometheus.atc.gr:8080/nexus/content/repositories/snapshots/</url>
+            <snapshots>
+                <updatePolicy>always</updatePolicy>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository> 
     </repositories>
     <pluginRepositories />
     
@@ -209,31 +243,6 @@
          
             </plugin>
       
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 </project>

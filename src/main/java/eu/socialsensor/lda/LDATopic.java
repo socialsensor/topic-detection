@@ -1,10 +1,12 @@
 package eu.socialsensor.lda;
 
+import eu.socialsensor.framework.common.domain.Item;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-import eu.socialsensor.framework.common.domain.Item;
-import eu.socialsensor.framework.common.domain.dysco.Ngram;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Wrapper for major elements of a topic 
@@ -14,7 +16,7 @@ import eu.socialsensor.framework.common.domain.dysco.Ngram;
 public class LDATopic
 {
 	private String title;
-	private List<String> keywords;
+	private Map<String,Double> keywords;
 	private List<Item> representativeDocuments;
 	
 	/**
@@ -23,7 +25,7 @@ public class LDATopic
 	public LDATopic()
 	{
 		this.title = "";
-		this.keywords = new LinkedList<String>();
+		this.keywords = new HashMap<String,Double>();
 		this.representativeDocuments = new LinkedList<Item>();
 	}
 	
@@ -33,7 +35,7 @@ public class LDATopic
 	 * @param keywords the weighted list of keywords that define the topic
 	 * @param representativeDocuments a list of documents that most represent the topic
 	 */
-	public LDATopic(String title, List<String> keywords, List<Item> representativeDocuments)
+	public LDATopic(String title, Map<String,Double> keywords, List<Item> representativeDocuments)
 	{
 		this.title = title;
 		this.keywords = keywords;
@@ -62,7 +64,7 @@ public class LDATopic
 	 * Gets the weighted list of keywords that define the topic
 	 * @return the list of keywords
 	 */
-	public List<String> getKeywords()
+	public Map<String,Double> getKeywords()
 	{
 		return keywords;
 	}
@@ -71,7 +73,7 @@ public class LDATopic
 	 * Sets the weighted list of keywords that define the topic
 	 * @param keywords the list of keywords
 	 */
-	public void setKeywords(List<String> keywords)
+	public void setKeywords(Map<String,Double> keywords)
 	{
 		this.keywords = keywords;
 	}
@@ -98,18 +100,18 @@ public class LDATopic
 	{
 		String repr = "Title: "+this.title+"\n";
 		repr = repr + "Keywords:";
-		for (String n : this.keywords)
+		for (Entry<String,Double> tmp_entry : this.keywords.entrySet())
 		{
-			repr = repr + " " + n;
+			repr = repr + " " + tmp_entry.getKey();
 		}
 		repr = repr + "\n";
 		repr = repr + "Representative Docs:";
 		for (Item i : this.representativeDocuments)
 		{
-			String txt = i.getText();
+			String txt = i.getTitle();
 			if (txt.length() > 140)
 				txt = txt.substring(0, 140);
-			repr = repr + i.getText() + " -- ";
+			repr = repr + i.getTitle() + " -- ";
 		}
 		return repr;
 	}

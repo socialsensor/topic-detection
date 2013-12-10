@@ -6,8 +6,8 @@ import java.util.UUID;
 
 import eu.socialsensor.framework.common.domain.Item;
 import eu.socialsensor.framework.common.domain.dysco.Dysco;
-import eu.socialsensor.framework.common.domain.dysco.Ngram;
 import eu.socialsensor.framework.common.services.GenericDyscoCreator;
+import java.util.Map;
 
 /**
  * Integration of Mallet LDA with Dyscos 
@@ -62,7 +62,7 @@ public class DyscoCreator implements GenericDyscoCreator
     		for (LDATopic t : topics)
     		{
 	    		String title = t.getTitle();
-	    		List<String> keywords = t.getKeywords();
+	    		Map<String,Double> keywords = t.getKeywords();
 	    		List<Item> representativeDocuments = t.getRepresentativeDocuments();
 	    		
 	    		Dysco dysco = new Dysco();

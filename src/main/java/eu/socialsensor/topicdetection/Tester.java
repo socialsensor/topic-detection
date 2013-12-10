@@ -17,8 +17,8 @@ package eu.socialsensor.topicdetection;
 
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
-import eu.socialsensor.documentpivot.Utilities;
 import eu.socialsensor.framework.common.domain.Item;
+import eu.socialsensor.documentpivot.Utilities;
 import eu.socialsensor.framework.common.domain.dysco.Dysco;
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -26,6 +26,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  *
@@ -73,17 +75,18 @@ public class Tester {
             }
         }
         
+        
         System.out.println("");
         System.out.println("---- Results ----");
         System.out.println("No of Dyscos: "+dyscos.size());
         System.out.println("");
         for(Dysco next_dysco:dyscos){
             List<Item> dysco_items=next_dysco.getItems();
-            List<String> dysco_keywords=next_dysco.getKeywords();
+            Map<String,Double> dysco_keywords=next_dysco.getKeywords();
             System.out.println("===========");
             System.out.println("Keywords:");
-            for(String next_keyword:dysco_keywords)
-                System.out.print(next_keyword+" ");
+            for(Entry<String,Double> next_keyword:dysco_keywords.entrySet())
+                System.out.print(next_keyword.getKey()+" ("+next_keyword.getValue() +") ");
             System.out.println("");
             System.out.println("Items:");
             for(Item next_item:dysco_items)
@@ -108,7 +111,7 @@ public class Tester {
                     new_item.setTitle(text);
                     DBObject tmp_obj=(DBObject) dbObject.get("user");
                     String uploader=(String) tmp_obj.get("screen_name");
-                    new_item.setAuthor(uploader);
+                    new_item.setAuthorScreenName(uploader);
                     items.add(new_item);
                 }
             }

@@ -14,7 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import eu.socialsensor.documentpivot.termlikelihood.TermLikelihood;
 import eu.socialsensor.documentpivot.termvector.TermVector;
-import eu.socialsensor.framework.common.domain.dysco.Ngram;
+import java.util.Map.Entry;
 
 /**
  *
@@ -25,10 +25,11 @@ public class DyscoUtils {
     public static TermVector getTermVectorTFIDF(Dysco dysco,Map<String,TermLikelihood> allTerms,long N){
         TermVector tmp_vec=new TermVector();
         int i;
-        List<Ngram> keywords=dysco.getNgrams();
+        Map<String,Double> keywords=dysco.getKeywords();
         int n_terms=keywords.size();
-        for(i=0;i<n_terms;i++){
-            String next_term=(String) keywords.get(i).getTerm();
+        for(Entry<String,Double> tmp_entry:keywords.entrySet()){
+//        for(i=0;i<n_terms;i++){
+            String next_term=tmp_entry.getKey();
             TermLikelihood feat=allTerms.get(next_term);
             double weight=Math.log(N/feat.term.fTotal);
             tmp_vec.termsAndTFIDFWeights.put(next_term, weight);
@@ -41,16 +42,16 @@ public class DyscoUtils {
     public static double dyscoSimilarity(Dysco dysco1,Dysco dysco2){
         int i;
         if((dysco1==null)||(dysco2==null)) return 0;
-        List<Ngram> keywords1=dysco1.getNgrams();
+        Map<String,Double> keywords1=dysco1.getKeywords();
         if(keywords1==null) return 0;
         Set<String> keywordsSet1=new HashSet<String>();
-        for(Ngram ngram:keywords1)
-            keywordsSet1.add(ngram.getTerm());
-        List<Ngram> keywords2=dysco2.getNgrams();
+        for(Entry<String,Double> tmp_entry:keywords1.entrySet())
+            keywordsSet1.add(tmp_entry.getKey());
+        Map<String,Double> keywords2=dysco2.getKeywords();
         if(keywords2==null) return 0;
         Set<String> keywordsSet2=new HashSet<String>();
-        for(Ngram ngram:keywords2)
-            keywordsSet1.add(ngram.getTerm());
+        for(Entry<String,Double> tmp_entry:keywords2.entrySet())
+            keywordsSet2.add(tmp_entry.getKey());
         keywordsSet1.retainAll(keywordsSet2);
         double n_common=(double) keywordsSet1.size();
 
@@ -68,10 +69,10 @@ public class DyscoUtils {
         for(Dysco tmp_dysco:dyscos){
             i++;
             if(i>n_dyscos) return;
-            List<Ngram> keywords=tmp_dysco.getNgrams();
+            Map<String,Double> keywords=tmp_dysco.getKeywords();
             System.out.print(i+": ");
-            for(Ngram tmp_ngram:keywords){
-                System.out.print(tmp_ngram.getTerm()+" ");
+            for(Entry<String,Double> tmp_entry:keywords.entrySet()){
+                System.out.print(tmp_entry.getKey()+" ");
             }
             System.out.println();
         }
@@ -86,9 +87,9 @@ public class DyscoUtils {
             for(Dysco tmp_dysco:dyscos){
                 i++;
                 if(i>n_dyscos) return;
-                List<Ngram> keywords=tmp_dysco.getNgrams();
-                for(Ngram tmp_ngram:keywords){
-                        out.append(tmp_ngram.getTerm()+" ");
+                Map<String,Double> keywords=tmp_dysco.getKeywords();
+                for(Entry<String,Double> tmp_entry:keywords.entrySet()){
+                        out.append(tmp_entry.getKey()+" ");
                 }
                 out.newLine();
             }

@@ -9,7 +9,6 @@ import eu.socialsensor.documentpivot.dyscoutils.DyscoUtils;
 import eu.socialsensor.documentpivot.model.VectorSpace;
 import eu.socialsensor.documentpivot.model.RankedObject;
 import eu.socialsensor.documentpivot.preprocessing.TweetPreprocessor;
-import eu.socialsensor.framework.common.domain.dysco.Ngram;
 import java.util.*;
 import java.util.Map.Entry;
 import org.apache.lucene.index.Term;
@@ -29,9 +28,12 @@ public class DyscoCreator {
     private static eu.socialsensor.documentpivot.model.Vocabulary vocabulary;
     private static double similarity_threshold = 0.1;
     private static double def_similarity_threshold = 0.1;
+    private static int minimum_cluster_size;
 
     public DyscoCreator() {
         eu.socialsensor.documentpivot.Constants.configuration=new eu.socialsensor.documentpivot.Configuration();
+        similarity_threshold=Double.parseDouble(Utilities.readProperty(eu.socialsensor.documentpivot.Constants.SIMILARITY_THRESHOLD,eu.socialsensor.documentpivot.Constants.configuration.getConfig()));
+        minimum_cluster_size=Integer.parseInt(Utilities.readProperty(eu.socialsensor.documentpivot.Constants.MIN_NO_OF_DOCUMENTS_PER_CLUSTER,eu.socialsensor.documentpivot.Constants.configuration.getConfig()));
     }
     
     
@@ -57,7 +59,6 @@ public class DyscoCreator {
             vocabulary_reference = new Vocabulary();
             vocabulary_reference.load(false);
         }
-
         Map<String, Item> postsList = new HashMap<String, Item>();
         Item tmp_post;
         Iterator<Item> postIterator = items.iterator();
@@ -66,7 +67,6 @@ public class DyscoCreator {
             postsList.put(tmp_post.getId(), tmp_post);
         }
 
-        System.out.println("N items: " + postsList.size());
         Iterator<Item> postIteratorNew = postsList.values().iterator();
         vocabulary = eu.socialsensor.documentpivot.model.Vocabulary.createVocabulary(postIteratorNew);
 
@@ -77,27 +77,29 @@ public class DyscoCreator {
 
         postIteratorNew = postsList.values().iterator();
         clusters = clusterTweets(postIteratorNew);
-        System.out.println("Clusters size: " + clusters.size());
-
+        
+        
         eu.socialsensor.framework.common.domain.dysco.Dysco tmp_dysco = new Dysco();
         List<Dysco> dyscos = new ArrayList<Dysco>();
 
         for (Entry<String, List<String>> tmp_entry : clusters.entrySet()) {
-            Dysco dysco = new Dysco();
-            dysco.setId(UUID.randomUUID().toString());
-            dysco.setTitle("");
-            List<String> keywords = new ArrayList<String>();
-            List<Item> assigned_posts = new ArrayList<Item>();
-            for (String tmp_str : tmp_entry.getValue()) {
-                tmp_post = postsList.get(tmp_str);
-                assigned_posts.add(tmp_post);
-                //keywords.add(tmp_str);
-            }
-            dysco.setKeywords(keywords);
-            dysco.setItems(assigned_posts);
-            dysco.setScore(assigned_posts.size());
-            if (assigned_posts.size() > 0) {
-                dyscos.add(dysco);
+            if(tmp_entry.getValue().size()>=minimum_cluster_size){
+                Dysco dysco = new Dysco();
+                dysco.setId(UUID.randomUUID().toString());
+                dysco.setTitle("");
+                Map<String,Double> keywords = new HashMap<String,Double>();
+                List<Item> assigned_posts = new ArrayList<Item>();
+                for (String tmp_str : tmp_entry.getValue()) {
+                    tmp_post = postsList.get(tmp_str);
+                    assigned_posts.add(tmp_post);
+                    //keywords.add(tmp_str);
+                }
+                dysco.setKeywords(keywords);
+                dysco.setItems(assigned_posts);
+                dysco.setScore((double) assigned_posts.size());
+                if (assigned_posts.size() > 0) {
+                    dyscos.add(dysco);
+                }
             }
         }
 
@@ -105,7 +107,7 @@ public class DyscoCreator {
 
             @Override
             public int compare(Dysco p1, Dysco p2) {
-                return (int) (p2.getScore() - p1.getScore());
+                return (new Double(p2.getScore() - p1.getScore())).intValue();
             }
         });
 
@@ -139,6 +141,9 @@ public class DyscoCreator {
             }
             Comparator mycomparator = Collections.reverseOrder();
             Collections.sort(values, mycomparator);
+            
+            //In order to extract keywords, the keyword extractor, outside the dysco creator, is used
+            /*
             Set<String> keywords = new HashSet<String>();
             for (int p = 0; (p < 10) && (p < values.size()); p++) {
                 Double nextVal = values.get(p);
@@ -149,7 +154,7 @@ public class DyscoCreator {
                 }
             }
             tmp_dysco.setKeywords(new ArrayList<String>(keywords));
-
+            */
 
         }
 

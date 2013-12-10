@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.lucene.index.Term;
 
 import cc.mallet.pipe.CharSequence2TokenSequence;
 import cc.mallet.pipe.Pipe;
@@ -18,7 +17,7 @@ import cc.mallet.pipe.iterator.ArrayIterator;
 import cc.mallet.topics.ParallelTopicModel;
 import cc.mallet.types.InstanceList;
 import eu.socialsensor.framework.common.domain.Item;
-import eu.socialsensor.framework.common.domain.dysco.Ngram;
+import java.util.*;
 
 /**
  * Mallet LDA 
@@ -128,18 +127,18 @@ public class LDA
         for(int topicId=0; topicId<words.length; topicId++)
         {
         	LDATopic topic = new LDATopic();
-        	LinkedList<String> keywords = new LinkedList<String>();
+        	Map<String,Double> keywords = new HashMap<String,Double>();
         	double i = 1.0;
         	for(int wordId=0; wordId<words[topicId].length; wordId++)
         	{
         		String keyword = (String)words[topicId][wordId];
         		double score = i;
-        		keywords.add(keyword);
+        		keywords.put(keyword,score);
         		i = i/2;
         	}
         	topic.setKeywords(keywords);
         	Item reprItem = itemsArray.get(topicToRepresentativeDoc.get(topicId).k);
-        	topic.setTitle(reprItem.getText());
+        	topic.setTitle(reprItem.getTitle());
         	LinkedList<Item> reprDocs = new LinkedList<Item>();
         	reprDocs.add(reprItem);
         	topic.setRepresentativeDocuments(reprDocs);
