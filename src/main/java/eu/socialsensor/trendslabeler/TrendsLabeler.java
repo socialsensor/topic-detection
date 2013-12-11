@@ -80,8 +80,7 @@ public class TrendsLabeler {
     
     public static void main(String[] args) {
         
-        DyscoDAO dyscoDAO = new DyscoDAOImpl();
-        try{
+        DyscoDAO dyscoDAO = new DyscoDAOImpl("social1.atc.gr","dyscos","items","MediaItems");        try{
             BufferedWriter bw=new BufferedWriter(new FileWriter("D:\\topicTitlesChanges.txt"));
             int n_to_process=1;
 //            int n_to_process=dyscoIds.length;
@@ -89,7 +88,6 @@ public class TrendsLabeler {
             for(int i=0;i<n_to_process;i++){
 
                 Dysco dysco=dyscoDAO.findDysco(dyscoIds[i]);
-
                 List<Entity> ents=dysco.getEntities();
                 bw.append("");
                 bw.append("-------------------------------\n");
