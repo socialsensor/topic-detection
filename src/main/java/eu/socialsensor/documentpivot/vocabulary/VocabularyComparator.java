@@ -221,7 +221,8 @@ public class VocabularyComparator {
                     Map<String,Double> keywords=new HashMap<String,Double>();
                     List<Item> rel_items=new ArrayList<Item>();
                     for(TermLikelihood  tmp_tl:tmp_topic_terms)
-                        keywords.put(tmp_tl.term.name,new Double(tmp_tl.term.docs.size()));
+//                        keywords.put(tmp_tl.term.name,new Double(tmp_tl.term.docs.size()));
+                        keywords.put(tmp_tl.term.name,new Double(tmp_tl.likelihood_ratio));
                     for(String tmp_id:working_term.term.docs.keySet()){
                         Item next_rel_item=items_map.get(tmp_id);
                         if(next_rel_item!=null)
