@@ -27,56 +27,40 @@ public class TweetPreprocessor {
     private static StandardAnalyzer analyzer = new StandardAnalyzer(Version.LUCENE_35);
 
     private static final Pattern urlPattern = Pattern.compile(
-            "(?:^|[\\W])((ht|f)tp(s?):\\/\\/|www\\.)"
-                    + "(([\\w\\-]+\\.){1,}?([\\w\\-.~]+\\/?)*"
-                    + "[\\p{Alnum}.,%_=?&#\\-+()\\[\\]\\*$~@!:/{};']*)",
-            Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);  
+                "(?:^|[\\W])((ht|f)tp(s?):\\/\\/|www\\.)"
+                + "(([\\w\\-]+\\.){1,}?([\\w\\-.~]+\\/?)*"
+                + "[\\p{Alnum}.,%_=?&#\\-+()\\[\\]\\*$~@!:/{};']*)",
+                Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
 
     private static final Pattern hashtagPattern = 
     Pattern.compile("(?:^|\\s|[\\p{Punct}&&[^/]])(#[\\p{L}0-9-_]+)");    
-
+    
     private static final Pattern usermentionPattern = 
     Pattern.compile("(?:^|\\s|[\\p{Punct}&&[^/]])(@[\\p{L}0-9-_]+)");    
     
-    public static List<String> Tokenize(Item item,boolean include_user_mentions,boolean include_hashtags){
+    
+    
+//    public static List<String> tokenize(String text){
+    public static List<String> Tokenize(Item item,boolean cleanURLs, boolean cleanHashtags, boolean cleanUserMentions){
+        String text=item.getTitle();
+        text=cleanText(text, cleanURLs, cleanHashtags, cleanUserMentions);
+        
+        if(analyzer==null){
+            try {
+                analyzer = new StandardAnalyzer(Version.LUCENE_35,new StringReader(eu.socialsensor.keywordextractor.StopWords.stopWords));
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
         List<String> tokensList = new ArrayList<String>();
         try {
-//            String tmp_content=item.getText();
-            String tmp_content=item.getTitle();
-            if(tmp_content==null) tmp_content="";
-//            List<String> urls=getURLs(tmp_content);
-            List<String> urls=getURLsFromItem(item);
-            for(String url : urls) {
-                tmp_content=tmp_content.replace(url, "");
-            }
-
-            if(!include_hashtags){
-                List<String> hashtags=getHashtags(tmp_content);
-                for(String hashtag : hashtags) 
-                    tmp_content = tmp_content.replace(hashtag, "");
-            }
-
-            if(!include_user_mentions){
-                List<String> usermentions=getUsermentions(tmp_content);
-                for(String usermention : usermentions) 
-                    tmp_content = tmp_content.replace(usermention, "");
-            }
-            
+            String tmp_content=text;
             if(tmp_content==null) tmp_content="";
             TokenStream stream  = analyzer.tokenStream(null, new StringReader(tmp_content));
             stream.reset();
             while (stream.incrementToken()) {
                 tokensList.add(stream.getAttribute(CharTermAttribute.class).toString());
             }
-/*          
-            System.out.println("Tweet :"+item.getTitle());
-            System.out.print("Tokens: ");
-            for(String tmp_tkn:tokensList){
-                System.out.print(tmp_tkn+" ");
-            }
-            System.out.println("");
-            
-            */
         } catch (IOException e) {
             e.printStackTrace();
         } catch (Exception e) {
@@ -113,15 +97,56 @@ public class TweetPreprocessor {
         return urlsSet;
     }
 
-    public static List<String> getURLsFromItem(Item item){
-        List<String> urlsSet=new ArrayList<String>();
-        URL[] urls=item.getLinks();
-        if(urls!=null)
-            for(int i=0;i<urls.length;i++)
-                urlsSet.add(urls[i].toString());
-        return urlsSet;
+    ///////////////////////////////////
+    
+        public static String cleanText(String text, boolean cleanURLs, boolean cleanHashtags, boolean cleanUserMentions){
+        String cleanedText=text;
+        if(cleanURLs) cleanedText = removeURLs(cleanedText);
+        if(cleanHashtags) cleanedText = removeHashtags(cleanedText);
+        if(cleanUserMentions) cleanedText = removeUserMentions(cleanedText);
+        return cleanedText;
+    }
+
+    
+    public static List<String> tokenize(String text){
+        if(analyzer==null){
+            try {
+                analyzer = new StandardAnalyzer(Version.LUCENE_35,new StringReader(eu.socialsensor.keywordextractor.StopWords.stopWords));
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+        List<String> tokensList = new ArrayList<String>();
+        try {
+            String tmp_content=text;
+            if(tmp_content==null) tmp_content="";
+            TokenStream stream  = analyzer.tokenStream(null, new StringReader(tmp_content));
+            stream.reset();
+            while (stream.incrementToken()) {
+                tokensList.add(stream.getAttribute(CharTermAttribute.class).toString());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return tokensList;
     }
     
+    public static List<String> getURLStrings(String originalString){
+        List<String> urlsSet=new ArrayList<String>();
+        Matcher matcher = urlPattern.matcher(originalString);
+        while (matcher.find()) {
+            int matchStart = matcher.start(1);
+            int matchEnd = matcher.end();
+            String tmpUrl=originalString.substring(matchStart,matchEnd);
+            urlsSet.add(tmpUrl);
+            originalString=originalString.replace(tmpUrl,"");
+            matcher = urlPattern.matcher(originalString);
+        }
+        return urlsSet;
+    }
+
     
     public static List<String> getHashtags(String originalString){
         List<String> hashtagSet=new ArrayList<String>();
@@ -131,9 +156,7 @@ public class TweetPreprocessor {
             int matchEnd = matcher.end();
             String tmpHashtag=originalString.substring(matchStart,matchEnd);
             hashtagSet.add(tmpHashtag);
-            System.out.println("++ "+tmpHashtag);
             originalString=originalString.replace(tmpHashtag,"");
-            System.out.println("-- "+originalString);
             matcher = hashtagPattern.matcher(originalString);
         }
         return hashtagSet;
@@ -147,13 +170,52 @@ public class TweetPreprocessor {
             int matchEnd = matcher.end();
             String tmpUsermention=originalString.substring(matchStart,matchEnd);
             usermentionsSet.add(tmpUsermention);
-            System.out.println("++ "+tmpUsermention);
             originalString=originalString.replace(tmpUsermention,"");
-            System.out.println("-- "+originalString);
             matcher = usermentionPattern.matcher(originalString);
         }
         return usermentionsSet;
     }
+    
+    
+    private static String removeHashtags(String text){
+        Matcher matcher;
+        String newTweet = text.trim();
+        String cleanedText="";
+        while(!newTweet.equals(cleanedText)){
+                cleanedText=newTweet;
+                matcher = hashtagPattern.matcher(cleanedText);
+                newTweet = matcher.replaceAll("");
+                newTweet =newTweet.trim();
+        }
+        return cleanedText;
+    }
+
+    private static String removeURLs(String text){
+        Matcher matcher;
+        String newTweet = text.trim();
+        String cleanedText="";
+        while(!newTweet.equals(cleanedText)){
+                cleanedText=newTweet;
+                matcher = urlPattern.matcher(cleanedText);
+                newTweet = matcher.replaceAll("");
+                newTweet =newTweet.trim();
+        }
+        return cleanedText;
+    }
+    
+    private static String removeUserMentions(String text){
+        Matcher matcher;
+        String newTweet = text.trim();
+        String cleanedText="";
+        while(!newTweet.equals(cleanedText)){
+                cleanedText=newTweet;
+                matcher = usermentionPattern.matcher(cleanedText);
+                newTweet = matcher.replaceAll("");
+                newTweet =newTweet.trim();
+        }
+        return cleanedText;
+    }
+
     
     
     

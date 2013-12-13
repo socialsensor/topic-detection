@@ -17,9 +17,13 @@ package eu.socialsensor.topicdetection;
 
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
+import eu.socialsensor.documentpivotentitybased.DyscoCreator;
+import eu.socialsensor.entitiesextractor.EntityDetection;
+import eu.socialsensor.framework.client.dao.ItemDAO;
+import eu.socialsensor.framework.client.dao.impl.ItemDAOImpl;
 import eu.socialsensor.framework.common.domain.Item;
-import eu.socialsensor.documentpivot.Utilities;
 import eu.socialsensor.framework.common.domain.dysco.Dysco;
+import eu.socialsensor.keywordextractor.KeywordExtractor;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.text.SimpleDateFormat;
@@ -34,7 +38,7 @@ import java.util.Map.Entry;
  * @author gpetkos
  */
 public class Tester {
-    
+    /*
     public static void main(String[] args){
         BasicConfiguration mainConfig=new MainConfiguration();
         mainConfig.getConfig();
@@ -94,6 +98,43 @@ public class Tester {
             
         }
         
+    }
+   */
+    
+    public static void main(String[] args){
+        ItemDAO itemdao=new ItemDAOImpl("social1.atc.gr");
+        System.out.println("Getting items");
+        List<Item> items=itemdao.getLatestItems(1000);
+        System.out.println("Finding entities");
+        EntityDetection ent=new EntityDetection();
+        ent.addEntitiesToItems(items);
+        System.out.println("Getting dyscos");
+        DyscoCreator dc=new DyscoCreator();
+        List<Dysco> dyscos=dc.createDyscos(items);
+        
+        /*
+        System.out.println("");
+        System.out.println("---- Results ----");
+        System.out.println("No of Dyscos: "+dyscos.size());
+        System.out.println("");
+        for(Dysco next_dysco:dyscos){
+            KeywordExtractor.extractKeywordsCERTH(next_dysco);
+            List<Item> dysco_items=next_dysco.getItems();
+            Map<String,Double> dysco_keywords=next_dysco.getKeywords();
+            System.out.println("===========");
+            System.out.println("Keywords:");
+            for(Entry<String,Double> next_keyword:dysco_keywords.entrySet())
+                System.out.print(next_keyword.getKey()+" ("+next_keyword.getValue() +") ");
+            System.out.println("");
+            System.out.println("Items:");
+            for(Item next_item:dysco_items)
+                System.out.println("- "+next_item.getTitle());
+            
+        }
+        
+        */
+        
+                
     }
     
     public static List<Item> loadItemsFromFile(String filename){

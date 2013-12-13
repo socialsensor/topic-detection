@@ -118,7 +118,7 @@ public class DyscoCreator {
             List<Item> assigned_posts = tmp_dysco.getItems();
             for (int j = 0; j < assigned_posts.size(); j++) {
                 tmp_post = assigned_posts.get(j);
-                List<String> terms = TweetPreprocessor.Tokenize(tmp_post, true, true);
+                List<String> terms = TweetPreprocessor.Tokenize(tmp_post, true, true, true);
                 for (String tmp_term : terms) {
                     Double tmp_freq = freqs.get(tmp_term);
                     if (tmp_freq == null) {
@@ -194,7 +194,7 @@ public class DyscoCreator {
             while (postsIterator.hasNext()) {
                 tmp_post = postsIterator.next();
 
-                List<String> tokens = TweetPreprocessor.Tokenize(tmp_post, true, true);
+                List<String> tokens = TweetPreprocessor.Tokenize(tmp_post, true, true,true);
                 VectorSpace vsm = new VectorSpace(tmp_post.getId(), tokens);
                 RankedObject nearest = hashTables.getNearest(vsm);
 

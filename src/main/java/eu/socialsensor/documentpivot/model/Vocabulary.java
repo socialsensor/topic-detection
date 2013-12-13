@@ -141,7 +141,7 @@ public class Vocabulary {
                 Item tmp_post=null;
                 while(postsIterator.hasNext()){
                     tmp_post=postsIterator.next();
-                    List<String> tokens=TweetPreprocessor.Tokenize(tmp_post, true, true);
+                    List<String> tokens=TweetPreprocessor.Tokenize(tmp_post, true, true, true);
                     vocabulary.update(tokens);
                 }
 		return vocabulary;

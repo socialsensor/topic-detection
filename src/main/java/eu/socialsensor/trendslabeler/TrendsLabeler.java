@@ -80,7 +80,9 @@ public class TrendsLabeler {
     
     public static void main(String[] args) {
         
-        DyscoDAO dyscoDAO = new DyscoDAOImpl("social1.atc.gr","dyscos","items","MediaItems");        try{
+        DyscoDAO dyscoDAO = new DyscoDAOImpl(); 
+        try{
+//        DyscoDAO dyscoDAO = new DyscoDAOImpl("social1.atc.gr","dyscos","items","MediaItems");        try{
             BufferedWriter bw=new BufferedWriter(new FileWriter("D:\\topicTitlesChanges.txt"));
             int n_to_process=1;
 //            int n_to_process=dyscoIds.length;
