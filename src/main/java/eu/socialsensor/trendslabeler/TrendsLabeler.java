@@ -78,6 +78,7 @@ public class TrendsLabeler {
     public static final Set<String> BREAKING_ACCOUNTS = new HashSet<String>(Arrays.asList(BREAKING_ARRAY));    
     public static double url_threshold_similarity=0.2;
     
+    /*
     public static void main(String[] args) {
         
         DyscoDAO dyscoDAO = new DyscoDAOImpl(); 
@@ -152,7 +153,7 @@ public class TrendsLabeler {
             e.printStackTrace();
         }
     }
-    
+    */
     
     static Extractor extr = new Extractor();
 
@@ -993,5 +994,7 @@ public class TrendsLabeler {
 "dd6ba020-408f-415b-b803-879971aa90ef",
 "1747f8e6-dc8d-45b9-8d29-05eac42864fa",
 "0cc3a5f1-4963-4e21-a47c-bad176be0f16"};    
+    
+    
 }
 
