@@ -9,6 +9,8 @@ import eu.socialsensor.documentpivot.dyscoutils.DyscoUtils;
 import eu.socialsensor.documentpivot.model.VectorSpace;
 import eu.socialsensor.documentpivot.model.RankedObject;
 import eu.socialsensor.documentpivot.preprocessing.TweetPreprocessor;
+import eu.socialsensor.framework.client.dao.ItemDAO;
+import eu.socialsensor.framework.client.dao.impl.ItemDAOImpl;
 import java.util.*;
 import java.util.Map.Entry;
 import org.apache.lucene.index.Term;
@@ -118,7 +120,7 @@ public class DyscoCreator {
             List<Item> assigned_posts = tmp_dysco.getItems();
             for (int j = 0; j < assigned_posts.size(); j++) {
                 tmp_post = assigned_posts.get(j);
-                List<String> terms = TweetPreprocessor.Tokenize(tmp_post, true, true, true);
+                List<String> terms = TweetPreprocessor.Tokenize(tmp_post, true, false, true);
                 for (String tmp_term : terms) {
                     Double tmp_freq = freqs.get(tmp_term);
                     if (tmp_freq == null) {
@@ -194,11 +196,6 @@ public class DyscoCreator {
             while (postsIterator.hasNext()) {
                 tmp_post = postsIterator.next();
                 List<String> tokens = TweetPreprocessor.Tokenize(tmp_post, true, false, true);
-                System.out.println("----Tokens -------");
-                System.out.println(tmp_post.getTitle());
-                for(String token:tokens)
-                    System.out.print(token);
-                System.out.println();
                 VectorSpace vsm = new VectorSpace(tmp_post.getId(), tokens);
                 RankedObject nearest = hashTables.getNearest(vsm);
 
@@ -219,4 +216,6 @@ public class DyscoCreator {
         }
         return clusters;
     }
+    
+    
 }
