@@ -194,6 +194,11 @@ public class DyscoCreator {
             while (postsIterator.hasNext()) {
                 tmp_post = postsIterator.next();
                 List<String> tokens = TweetPreprocessor.Tokenize(tmp_post, true, false, true);
+                System.out.println("----Tokens -------");
+                System.out.println(tmp_post.getTitle());
+                for(String token:tokens)
+                    System.out.print(token);
+                System.out.println();
                 VectorSpace vsm = new VectorSpace(tmp_post.getId(), tokens);
                 RankedObject nearest = hashTables.getNearest(vsm);
 

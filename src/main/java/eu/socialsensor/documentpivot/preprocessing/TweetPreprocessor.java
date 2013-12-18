@@ -99,11 +99,13 @@ public class TweetPreprocessor {
 
     ///////////////////////////////////
     
-        public static String cleanText(String text, boolean cleanURLs, boolean cleanHashtags, boolean cleanUserMentions){
+    public static String cleanText(String text, boolean cleanURLs, boolean cleanHashtags, boolean cleanUserMentions){
         String cleanedText=text;
+        System.out.println("Pre cleaning: "+cleanedText);
         if(cleanURLs) cleanedText = removeURLs(cleanedText);
         if(cleanHashtags) cleanedText = removeHashtags(cleanedText);
         if(cleanUserMentions) cleanedText = removeUserMentions(cleanedText);
+        System.out.println("Post cleaning: "+cleanedText);
         return cleanedText;
     }
 
