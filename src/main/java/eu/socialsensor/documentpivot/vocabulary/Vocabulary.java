@@ -247,7 +247,7 @@ public class Vocabulary {
        Iterator<String> it;
         while(postIterator.hasNext()){
             tmp_post=postIterator.next();
-            List<String> tmp_tokens=TweetPreprocessor.Tokenize(tmp_post, true, true,true);
+            List<String> tmp_tokens=TweetPreprocessor.Tokenize(tmp_post, true, false,true);
 //            List<String> tmp_tokens=tmp_post.getTokens();
             String tmp_term;
             it = tmp_tokens.iterator();
