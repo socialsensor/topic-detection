@@ -29,8 +29,8 @@ public class Vocabulary {
     }
 
     
-    public void load(boolean readTweetIndices){
-        readFromResource(readTweetIndices);
+    public void load(boolean readTweetIndices,boolean withStopWords){
+        readFromResource(readTweetIndices,withStopWords);
     }
     
     
@@ -129,11 +129,14 @@ public class Vocabulary {
         }
     }
 
-    public void readFromResource(boolean readTweetIndices){
+    public void readFromResource(boolean readTweetIndices, boolean includeStopWords){
         BufferedReader reader = null;
         ClassLoader loader=ClassLoader.getSystemClassLoader ();
         InputStream IS = null;
-        IS = loader.getResourceAsStream ("vocabulary_corpus.txt");
+        if(includeStopWords)
+            IS = loader.getResourceAsStream ("vocabulary_corpus_with_stopwords.txt");
+        else
+            IS = loader.getResourceAsStream ("vocabulary_corpus_.txt");
         try {
 //                reader = new BufferedReader(
   //                              new InputStreamReader(new FileInputStream(filename),"UTF8"));
