@@ -59,7 +59,7 @@ public class DyscoCreator {
     public List<Dysco> createDyscos(List<Item> items) {
         if (vocabulary_reference == null) {
             vocabulary_reference = new Vocabulary();
-            vocabulary_reference.load(false);
+            vocabulary_reference.load(false,true);
         }
         Map<String, Item> postsList = new HashMap<String, Item>();
         Item tmp_post;
