@@ -136,7 +136,7 @@ public class Vocabulary {
         if(includeStopWords)
             IS = loader.getResourceAsStream ("vocabulary_corpus_with_stopwords.txt");
         else
-            IS = loader.getResourceAsStream ("vocabulary_corpus_.txt");
+            IS = loader.getResourceAsStream ("vocabulary_corpus.txt");
         try {
 //                reader = new BufferedReader(
   //                              new InputStreamReader(new FileInputStream(filename),"UTF8"));
