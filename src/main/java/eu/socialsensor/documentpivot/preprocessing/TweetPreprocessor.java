@@ -25,7 +25,10 @@ import org.apache.lucene.util.Version;
  */
 public class TweetPreprocessor {
     private static StandardAnalyzer analyzer = new StandardAnalyzer(Version.LUCENE_35);
-
+    public static boolean filterURLs;
+    public static boolean filterHashtags;
+    public static boolean filterUserMentions;
+    
     private static final Pattern urlPattern = Pattern.compile(
                 "(?:^|[\\W])((ht|f)tp(s?):\\/\\/|www\\.)"
                 + "(([\\w\\-]+\\.){1,}?([\\w\\-.~]+\\/?)*"
@@ -40,11 +43,11 @@ public class TweetPreprocessor {
     
     
     
-//    public static List<String> tokenize(String text){
-    public static List<String> Tokenize(Item item,boolean cleanURLs, boolean cleanHashtags, boolean cleanUserMentions){
-        String text=item.getTitle();
-        text=cleanText(text, cleanURLs, cleanHashtags, cleanUserMentions);
-        
+
+    public static List<String> Tokenize(String text){
+        text=cleanText(text, filterURLs, filterHashtags, filterUserMentions);
+
+        /*
         if(analyzer==null){
             try {
                 analyzer = new StandardAnalyzer(Version.LUCENE_35,new StringReader(eu.socialsensor.keywordextractor.StopWords.stopWords));
@@ -66,9 +69,13 @@ public class TweetPreprocessor {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        * 
+        * 
+        */
+        List<String> tokensList = Twokenize.tokenize(text);
         return tokensList;
     }
-
+    
     public static List<String> TokenizeForSentimentAnalysis(Item item){
         return null;
     }
@@ -111,7 +118,7 @@ public class TweetPreprocessor {
     public static List<String> tokenize(String text){
         if(analyzer==null){
             try {
-                analyzer = new StandardAnalyzer(Version.LUCENE_35,new StringReader(eu.socialsensor.keywordextractor.StopWords.stopWords));
+                analyzer = new StandardAnalyzer(Version.LUCENE_35,new StringReader(StopWords.stopWords));
             } catch (IOException ex) {
                 ex.printStackTrace();
             }

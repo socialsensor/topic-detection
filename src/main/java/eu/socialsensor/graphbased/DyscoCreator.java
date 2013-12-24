@@ -75,7 +75,7 @@ public class DyscoCreator {
        vocabulary_corpus.filterByNoOfOccurrences(5);
 
        vocabulary_reference=new Vocabulary();
-       vocabulary_reference.load(false,true);
+       vocabulary_reference.load(true);
        System.out.println("Read reference vocabulary");
        vocabulary_comparator=new VocabularyComparator(vocabulary_corpus,vocabulary_reference);
        vocabulary_comparator.outputOrdered(vocabulary_comparator.vocabulary_new_corpus.directory+vocabulary_comparator.vocabulary_new_corpus.filename_start+".vocabulary_ratios");

@@ -1,10 +1,6 @@
 package eu.socialsensor.documentpivot.model;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import eu.socialsensor.documentpivot.preprocessing.TweetPreprocessor;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,19 +9,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.commons.io.IOUtils;
-
-import com.aliasi.util.BoundedPriorityQueue;
 import java.util.List;
-import eu.socialsensor.documentpivot.utils.Tokenizer;
 
-import twitter4j.Status;
-import twitter4j.StatusDeletionNotice;
-import twitter4j.StatusListener;
-import twitter4j.TwitterStream;
-import twitter4j.TwitterStreamFactory;
-import twitter4j.conf.Configuration;
-import twitter4j.conf.ConfigurationBuilder;
 
 public class VectorSpace implements Iterable<Entry<Integer, Double>>, Comparator<VectorSpace>{
 	
@@ -36,11 +21,16 @@ public class VectorSpace implements Iterable<Entry<Integer, Double>>, Comparator
 	String tokens[];
 	Map<String, Integer> terms = new HashMap<String, Integer>();
 	Map<Integer, Double> features = null;
+        
+        public static int boost_hashtags_factor=1;
+        public static int boost_entities_factor=1;
+        public static Set<String> entities;
 	
 	long ts;
 	
 	public VectorSpace() { }
 
+//	public VectorSpace(String id, List<String> intokens,int boost_hashtags_factor,int boost_entities_factor, Set<String> entities) {
 	public VectorSpace(String id, List<String> intokens) {
 		this.ts = System.currentTimeMillis();
 		this.id = id;
@@ -55,12 +45,17 @@ public class VectorSpace implements Iterable<Entry<Integer, Double>>, Comparator
                 text=text.trim();
 		//this.tokens = Tokenizer.tokenize(text);
 		for(String term : tokens) {
+                        int term_increase=1;
+                        if(entities.contains(term))
+                            term_increase=boost_entities_factor;
+                        if(term.startsWith("#"))
+                            term_increase=boost_hashtags_factor;
 			if(terms.containsKey(term)) {
-				int f = terms.get(term)+1;
+				int f = terms.get(term)+term_increase;
 				terms.put(term, f);
 			}
 			else{
-				terms.put(term, 1);
+				terms.put(term, term_increase);
 			}
 		}
 	}
@@ -71,18 +66,28 @@ public class VectorSpace implements Iterable<Entry<Integer, Double>>, Comparator
 		this.ts = System.currentTimeMillis();
 		this.id = id;
 		this.text = text;
-		this.tokens = Tokenizer.tokenize(text);
+                List<String> tokens_list=TweetPreprocessor.Tokenize(text);
+                String[] tokens_array=new String[tokens_list.size()];
+                for(int i=0;i<tokens_list.size();i++)
+                    tokens_array[i]=tokens_list.get(i);
+		this.tokens = tokens_array;
 		for(String term : tokens) {
+                        int term_increase=1;
+                        if(entities.contains(term))
+                            term_increase=boost_entities_factor;
+                        if(term.startsWith("#"))
+                            term_increase=boost_hashtags_factor;
 			if(terms.containsKey(term)) {
-				int f = terms.get(term)+1;
+				int f = terms.get(term)+term_increase;
 				terms.put(term, f);
 			}
 			else{
-				terms.put(term, 1);
+				terms.put(term, term_increase);
 			}
 		}
 	}
-	
+
+
 	public int tf(String term) {
 		Integer f = terms.get(term);
 		if(f==null)

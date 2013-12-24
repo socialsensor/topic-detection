@@ -3,17 +3,17 @@ package eu.socialsensor.documentpivot;
 import eu.socialsensor.framework.common.domain.Item;
 import eu.socialsensor.framework.common.domain.dysco.Dysco;
 import eu.socialsensor.documentpivot.vocabulary.Vocabulary;
-import eu.socialsensor.framework.common.services.GenericDyscoCreator;
 import eu.socialsensor.documentpivot.LSH.HashTables;
 import eu.socialsensor.documentpivot.dyscoutils.DyscoUtils;
 import eu.socialsensor.documentpivot.model.VectorSpace;
 import eu.socialsensor.documentpivot.model.RankedObject;
 import eu.socialsensor.documentpivot.preprocessing.TweetPreprocessor;
+import eu.socialsensor.entitiesextractor.EntityDetection;
 import eu.socialsensor.framework.client.dao.ItemDAO;
 import eu.socialsensor.framework.client.dao.impl.ItemDAOImpl;
+import eu.socialsensor.framework.common.domain.dysco.Entity;
 import java.util.*;
 import java.util.Map.Entry;
-import org.apache.lucene.index.Term;
 
 /**
  *
@@ -25,17 +25,46 @@ import org.apache.lucene.index.Term;
  */
 public class DyscoCreator {
 
-    private static Vocabulary vocabulary_reference;
-    private static int L = 12, k = 16;
+    private Vocabulary vocabulary_reference;
+    private int L = 12, k = 16;
     private static eu.socialsensor.documentpivot.model.Vocabulary vocabulary;
-    private static double similarity_threshold = 0.1;
-    private static double def_similarity_threshold = 0.1;
-    private static int minimum_cluster_size;
-
+    private double similarity_threshold = 0.1;
+    private static final double def_similarity_threshold = 0.1;
+    private int minimum_cluster_size;
+    private boolean filter_hashtags;
+    private boolean filter_urls;
+    private boolean filter_user_mentions;
+    private int boost_hashtags_factor;
+    private int boost_entities_factor;
+    
+    
     public DyscoCreator() {
         eu.socialsensor.documentpivot.Constants.configuration=new eu.socialsensor.documentpivot.Configuration();
         similarity_threshold=Double.parseDouble(Utilities.readProperty(eu.socialsensor.documentpivot.Constants.SIMILARITY_THRESHOLD,eu.socialsensor.documentpivot.Constants.configuration.getConfig()));
         minimum_cluster_size=Integer.parseInt(Utilities.readProperty(eu.socialsensor.documentpivot.Constants.MIN_NO_OF_DOCUMENTS_PER_CLUSTER,eu.socialsensor.documentpivot.Constants.configuration.getConfig()));
+        String str_filter_hashtags=Utilities.readProperty(eu.socialsensor.documentpivot.Constants.FILTER_HASHTAGS,eu.socialsensor.documentpivot.Constants.configuration.getConfig()).toLowerCase().trim();
+        if(str_filter_hashtags.equals("true"))
+            filter_hashtags=true;
+        else
+            filter_hashtags=false;
+        String str_filter_urls=Utilities.readProperty(eu.socialsensor.documentpivot.Constants.FILTER_URLS,eu.socialsensor.documentpivot.Constants.configuration.getConfig()).toLowerCase().trim();
+        if(str_filter_urls.equals("true"))
+            filter_urls=true;
+        else
+            filter_urls=false;
+        String str_filter_user_mentions=Utilities.readProperty(eu.socialsensor.documentpivot.Constants.FILTER_USER_MENTIONS,eu.socialsensor.documentpivot.Constants.configuration.getConfig()).toLowerCase().trim();
+        if(str_filter_user_mentions.equals("true"))
+            filter_user_mentions=true;
+        else
+            filter_user_mentions=false;
+
+        boost_hashtags_factor=Integer.parseInt(Utilities.readProperty(eu.socialsensor.documentpivot.Constants.BOOST_HASHTAGS_FACTOR,eu.socialsensor.documentpivot.Constants.configuration.getConfig()));
+        boost_entities_factor=Integer.parseInt(Utilities.readProperty(eu.socialsensor.documentpivot.Constants.BOOST_ENTITIES_FACTOR,eu.socialsensor.documentpivot.Constants.configuration.getConfig()));
+        VectorSpace.boost_entities_factor=boost_entities_factor;
+        VectorSpace.boost_hashtags_factor=boost_hashtags_factor;
+        TweetPreprocessor.filterHashtags=filter_hashtags;
+        TweetPreprocessor.filterURLs=filter_urls;
+        TweetPreprocessor.filterUserMentions=filter_user_mentions;
     }
     
     
@@ -59,7 +88,7 @@ public class DyscoCreator {
     public List<Dysco> createDyscos(List<Item> items) {
         if (vocabulary_reference == null) {
             vocabulary_reference = new Vocabulary();
-            vocabulary_reference.load(false,true);
+            vocabulary_reference.load(true);
         }
         Map<String, Item> postsList = new HashMap<String, Item>();
         Item tmp_post;
@@ -71,14 +100,11 @@ public class DyscoCreator {
 
         Iterator<Item> postIteratorNew = postsList.values().iterator();
         vocabulary = eu.socialsensor.documentpivot.model.Vocabulary.createVocabulary(postIteratorNew);
-
         int d = vocabulary.size();
         HashTables hashTables = new HashTables(L, k, d);
 
         Map<String, List<String>> clusters;
-
-        postIteratorNew = postsList.values().iterator();
-        clusters = clusterTweets(postIteratorNew);
+        clusters = clusterTweets(items);
         
         
         eu.socialsensor.framework.common.domain.dysco.Dysco tmp_dysco = new Dysco();
@@ -120,7 +146,8 @@ public class DyscoCreator {
             List<Item> assigned_posts = tmp_dysco.getItems();
             for (int j = 0; j < assigned_posts.size(); j++) {
                 tmp_post = assigned_posts.get(j);
-                List<String> terms = TweetPreprocessor.Tokenize(tmp_post, true, false, true);
+                
+                List<String> terms = TweetPreprocessor.Tokenize(tmp_post.getTitle());
                 for (String tmp_term : terms) {
                     Double tmp_freq = freqs.get(tmp_term);
                     if (tmp_freq == null) {
@@ -186,16 +213,27 @@ public class DyscoCreator {
      * It is called by createDyscos, which further processes the clusters produced
      * by clusterTweets to generate DySCOs.
      */
-    public static Map<String, List<String>> clusterTweets(Iterator<Item> postsIterator) {
+    public Map<String, List<String>> clusterTweets(List<Item> items) {
         Map<String, List<String>> clusters = new HashMap<String, List<String>>();
         int d = vocabulary.size();
         HashTables hashTables = new HashTables(L, k, d);
 
+        //Get Entities Strings
+        Set<String> entitiesSet=new HashSet<String>();
+        for(Item tmp_post:items){
+            List<Entity> entities=tmp_post.getEntities();
+            if(entities!=null)
+                for(Entity entity:entities){
+                    String[] parts=entity.getName().split("\\s+");
+                    for(int i=0;i<parts.length;i++)
+                        entitiesSet.add(parts[i]);
+                }
+        }
+        VectorSpace.entities=entitiesSet;
+        
         try {
-            Item tmp_post = null;
-            while (postsIterator.hasNext()) {
-                tmp_post = postsIterator.next();
-                List<String> tokens = TweetPreprocessor.Tokenize(tmp_post, true, false, true);
+            for(Item tmp_post:items){
+                List<String> tokens = TweetPreprocessor.Tokenize(tmp_post.getTitle());
                 VectorSpace vsm = new VectorSpace(tmp_post.getId(), tokens);
                 RankedObject nearest = hashTables.getNearest(vsm);
 
@@ -217,5 +255,37 @@ public class DyscoCreator {
         return clusters;
     }
     
+    public static void main(String[] args){
+        Vocabulary voc=new Vocabulary();
+        voc.load(true);
+        System.out.println("No of terms with stop words : "+voc.terms.size());
+        voc=new Vocabulary();
+        voc.load(false);
+        System.out.println("No of terms without stop words : "+voc.terms.size());
+        /*
+        ItemDAO itemdao=new ItemDAOImpl("social1.atc.gr");
+        System.out.println("Getting items");
+        List<Item> items=itemdao.getLatestItems(10);
+        System.out.println("Extracting items");
+        EntityDetection ent=new EntityDetection();
+        ent.addEntitiesToItems(items);
+        System.out.println("Getting dyscos");
+        DyscoCreator dc=new DyscoCreator();
+        List<Dysco> dyscos=dc.createDyscos(items);
+        int count=0;
+        System.out.println("Printing dyscos:");
+        for(Dysco dysco:dyscos){
+            System.out.println("--------------------");
+            List<Item> tmp_items=dysco.getItems();
+            count=count+tmp_items.size();
+            for(Item item:tmp_items)
+                System.out.println(item.getTitle());
+        }
+        System.out.println("No of retrieved items: "+items.size());
+        System.out.println("No of grouped items : "+count);
+        System.out.println("No of dyscos : "+dyscos.size());
+        * 
+        */
+    }
     
 }

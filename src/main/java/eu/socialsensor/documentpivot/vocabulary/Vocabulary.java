@@ -29,8 +29,11 @@ public class Vocabulary {
     }
 
     
-    public void load(boolean readTweetIndices,boolean withStopWords){
-        readFromResource(readTweetIndices,withStopWords);
+    public void load(boolean withStopWords){
+        terms=new HashMap<String,TermFeature>();
+        fTotal=0;
+        minF=1;
+        readFromResource(withStopWords);
     }
     
     
@@ -129,35 +132,25 @@ public class Vocabulary {
         }
     }
 
-    public void readFromResource(boolean readTweetIndices, boolean includeStopWords){
+    public void readFromResource(boolean includeStopWords){
         BufferedReader reader = null;
         ClassLoader loader=ClassLoader.getSystemClassLoader ();
-        InputStream IS = null;
-        if(includeStopWords)
-            IS = loader.getResourceAsStream ("vocabulary_corpus_with_stopwords.txt");
-        else
-            IS = loader.getResourceAsStream ("vocabulary_corpus.txt");
+        String filename= "/home/social1/vocabulary_corpus.txt";
         try {
-//                reader = new BufferedReader(
-  //                              new InputStreamReader(new FileInputStream(filename),"UTF8"));
                 reader = new BufferedReader(
-                                new InputStreamReader(IS,"UTF8"));
+                                new InputStreamReader(new FileInputStream(filename),"UTF8"));
                 String line = null;
                 String[] parts;
                 while ( (line = reader.readLine()) != null){
                     parts=line.split(" ");
                     TermFeature tf_tmp=new TermFeature(parts[0]);
                     tf_tmp.fTotal=Integer.parseInt(parts[1]);
+                    boolean isStopWord=(parts.length==3);
+                    if(isStopWord&&!includeStopWords){
+                        continue;
+                    }
                     terms.put(parts[0], tf_tmp);
                     fTotal=fTotal+tf_tmp.fTotal;
-                    if(readTweetIndices){
-                        for(int i=2;i<parts.length;i++)
-//                            tf_tmp.docs.add(parts[i]);
-                            tf_tmp.docs.put(parts[i],1);
-                    }
-                         
-                        
-                    
                 }
                 reader.close();
         } catch (IOException e){
@@ -250,7 +243,7 @@ public class Vocabulary {
        Iterator<String> it;
         while(postIterator.hasNext()){
             tmp_post=postIterator.next();
-            List<String> tmp_tokens=TweetPreprocessor.Tokenize(tmp_post, true, false,true);
+            List<String> tmp_tokens=TweetPreprocessor.Tokenize(tmp_post.getTitle());
 //            List<String> tmp_tokens=tmp_post.getTokens();
             String tmp_term;
             it = tmp_tokens.iterator();

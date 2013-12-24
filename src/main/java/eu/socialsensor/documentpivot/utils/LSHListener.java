@@ -6,7 +6,6 @@ import eu.socialsensor.documentpivot.model.Vocabulary;
 import twitter4j.Status;
 import twitter4j.StatusDeletionNotice;
 import twitter4j.StatusListener;
-import eu.socialsensor.documentpivot.utils.Tokenizer;
 import twitter4j.StallWarning;
 
 public class LSHListener implements StatusListener {
@@ -22,8 +21,7 @@ public class LSHListener implements StatusListener {
 	@Override
 	public void onStatus(Status status) {
 		c++;
-		String text = Tokenizer.getTweetText(status, false, false);
-		VectorSpace vsm = new VectorSpace(Long.toString(status.getId()), text);
+		VectorSpace vsm = new VectorSpace(Long.toString(status.getId()), status.getText());
 		vocabulary.update(vsm.tokens());
 		hashTables.add(vsm);
 		

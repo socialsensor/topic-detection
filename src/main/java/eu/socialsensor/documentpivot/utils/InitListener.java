@@ -1,6 +1,8 @@
 package eu.socialsensor.documentpivot.utils;
 
 import eu.socialsensor.documentpivot.model.Vocabulary;
+import eu.socialsensor.documentpivot.preprocessing.TweetPreprocessor;
+import java.util.List;
 import twitter4j.StallWarning;
 import twitter4j.Status;
 import twitter4j.StatusDeletionNotice;
@@ -15,9 +17,11 @@ public class InitListener implements StatusListener {
 	}
 	@Override
 	public void onStatus(Status status) {
-		String text = Tokenizer.getTweetText(status, false, false);
-		String[] tokens = Tokenizer.tokenize(text);
-		vocabulary.update(tokens);
+                List<String> tokens_list=TweetPreprocessor.Tokenize(status.getText());
+                String[] tokens_array=new String[tokens_list.size()];
+                for(int i=0;i<tokens_list.size();i++)
+                    tokens_array[i]=tokens_list.get(i);
+		vocabulary.update(tokens_array);
     }
 	
 	@Override
