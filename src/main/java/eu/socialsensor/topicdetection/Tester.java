@@ -17,7 +17,7 @@ package eu.socialsensor.topicdetection;
 
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
-import eu.socialsensor.documentpivotentitybased.DyscoCreator;
+import eu.socialsensor.documentpivotentityandhashtagbased.DyscoCreator;
 import eu.socialsensor.entitiesextractor.EntityDetection;
 import eu.socialsensor.framework.client.dao.ItemDAO;
 import eu.socialsensor.framework.client.dao.impl.ItemDAOImpl;
