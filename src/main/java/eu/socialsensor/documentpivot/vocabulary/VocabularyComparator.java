@@ -20,6 +20,8 @@ import eu.socialsensor.graphbased.clust.ScanCommunityStructure;
 import eu.socialsensor.documentpivot.Utilities;
 import eu.socialsensor.documentpivot.Constants;
 import eu.socialsensor.framework.common.domain.Item;
+import eu.socialsensor.framework.common.domain.dysco.Entity;
+import eu.socialsensor.topicdetection.BasicConfiguration;
 import org.apache.lucene.index.Term;
 /**
  *
@@ -31,6 +33,21 @@ public class VocabularyComparator {
     List<TermLikelihood> terms;
     Map<String,TermLikelihood> termsMap;
     
+    /*
+    public VocabularyComparator(Vocabulary vocabulary_new_corpus, Vocabulary vocabulary_reference, boolean initializeForSFIM, boolean initializeForGraphBased, Set<String> entities) {
+        this.vocabulary_new_corpus = vocabulary_new_corpus;
+        this.vocabulary_reference = vocabulary_reference;
+        int n_items=vocabulary_new_corpus.size();
+        terms=new ArrayList<TermLikelihood>();
+        termsMap=new HashMap<String,TermLikelihood>();
+        if(initializeForSFIM && initializeForGraphBased) {
+            System.out.println("Vocabulary comparator: Will exit, cannot initialize both for SFIM and graph based");
+            System.exit(0);
+        }
+        if(initializeForSFIM) compareSFIM(entities);
+        if(initializeForGraphBased) compareGraphBased(entities);
+    }
+*/
     public VocabularyComparator(Vocabulary vocabulary_new_corpus, Vocabulary vocabulary_reference) {
         this.vocabulary_new_corpus = vocabulary_new_corpus;
         this.vocabulary_reference = vocabulary_reference;
@@ -39,13 +56,14 @@ public class VocabularyComparator {
         termsMap=new HashMap<String,TermLikelihood>();
         compare();
     }
-       
+
     public void compare(){
         for(TermFeature termfeature:vocabulary_new_corpus.terms.values()){
             double likelihood_new_corpus=vocabulary_new_corpus.getTermLikelihood(termfeature.name);
             double likelihood_reference=vocabulary_reference.getTermLikelihood(termfeature.name);
             double term_frequency=vocabulary_new_corpus.getTermFrequency(termfeature.name);
             double likelihood_ratio=(likelihood_new_corpus/likelihood_reference)*Math.log(term_frequency)*Math.log(term_frequency);
+            String term_string=termfeature.name;
             TermLikelihood tmp_likelihood=new TermLikelihood(termfeature,likelihood_ratio);
             if(tmp_likelihood.term.name.length()>2){
                 terms.add(tmp_likelihood);
@@ -62,7 +80,103 @@ public class VocabularyComparator {
         }
         });
     }
-   
+
+    
+    
+/*    
+    public void compareSFIM(Set<String> entities){
+        boolean selectAllHashtags=false;
+        String str_selectAllHashtags=Utilities.readProperty(eu.socialsensor.sfim.Constants.SELECT_ALL_HASHTAGS,eu.socialsensor.sfim.Constants.configuration.getConfig()).toLowerCase().trim();
+        if(str_selectAllHashtags.equals("true"))
+            selectAllHashtags=true;
+        else
+            selectAllHashtags=false;
+
+        boolean selectAllEntities=false;
+        String str_selectAllEntities=Utilities.readProperty(eu.socialsensor.sfim.Constants.SELECT_ALL_ENTITIES,eu.socialsensor.sfim.Constants.configuration.getConfig()).toLowerCase().trim();
+        if(str_selectAllEntities.equals("true"))
+            selectAllEntities=true;
+        else
+            selectAllEntities=false;
+        
+        for(TermFeature termfeature:vocabulary_new_corpus.terms.values()){
+            double likelihood_new_corpus=vocabulary_new_corpus.getTermLikelihood(termfeature.name);
+            double likelihood_reference=vocabulary_reference.getTermLikelihood(termfeature.name);
+            double term_frequency=vocabulary_new_corpus.getTermFrequency(termfeature.name);
+            double likelihood_ratio=(likelihood_new_corpus/likelihood_reference)*Math.log(term_frequency)*Math.log(term_frequency);
+            String term_string=termfeature.name;
+            if((selectAllEntities)&&(entities.contains(term_string))){
+                System.out.println("SELECTING ENTITY : "+term_string);
+                likelihood_ratio=Double.MAX_VALUE;
+            }
+            if((selectAllHashtags)&&(term_string.startsWith("#"))){
+                System.out.println("SELECTING HASHTAG : "+term_string);
+                likelihood_ratio=Double.MAX_VALUE;
+            }
+            TermLikelihood tmp_likelihood=new TermLikelihood(termfeature,likelihood_ratio);
+            if(tmp_likelihood.term.name.length()>2){
+                terms.add(tmp_likelihood);
+                termsMap.put(tmp_likelihood.term.name, tmp_likelihood);
+            }
+        }
+        
+        Collections.sort(terms, new Comparator<TermLikelihood>() {
+
+        public int compare(TermLikelihood o1, TermLikelihood o2) {
+            if(o1.likelihood_ratio>o2.likelihood_ratio) return -1;
+            if(o1.likelihood_ratio<o2.likelihood_ratio) return 1;
+            return 0;
+        }
+        });
+    }
+
+    public void compareGraphBased(Set<String> entities){
+        boolean selectAllHashtags=false;
+        String str_selectAllHashtags=Utilities.readProperty(eu.socialsensor.graphbased.Constants.SELECT_ALL_HASHTAGS,eu.socialsensor.graphbased.Constants.configuration.getConfig()).toLowerCase().trim();
+        if(str_selectAllHashtags.equals("true"))
+            selectAllHashtags=true;
+        else
+            selectAllHashtags=false;
+
+        boolean selectAllEntities=false;
+        String str_selectAllEntities=Utilities.readProperty(eu.socialsensor.graphbased.Constants.SELECT_ALL_ENTITIES,eu.socialsensor.graphbased.Constants.configuration.getConfig()).toLowerCase().trim();
+        if(str_selectAllEntities.equals("true"))
+            selectAllEntities=true;
+        else
+            selectAllEntities=false;
+        
+        for(TermFeature termfeature:vocabulary_new_corpus.terms.values()){
+            double likelihood_new_corpus=vocabulary_new_corpus.getTermLikelihood(termfeature.name);
+            double likelihood_reference=vocabulary_reference.getTermLikelihood(termfeature.name);
+            double term_frequency=vocabulary_new_corpus.getTermFrequency(termfeature.name);
+            double likelihood_ratio=(likelihood_new_corpus/likelihood_reference)*Math.log(term_frequency)*Math.log(term_frequency);
+            String term_string=termfeature.name;
+            if((selectAllEntities)&&(entities.contains(term_string))){
+                System.out.println("SELECTING ENTITY : "+term_string);
+                likelihood_ratio=Double.MAX_VALUE;
+            }
+            if((selectAllHashtags)&&(term_string.startsWith("#"))){
+                System.out.println("SELECTING HASHTAG : "+term_string);
+                likelihood_ratio=Double.MAX_VALUE;
+            }
+            TermLikelihood tmp_likelihood=new TermLikelihood(termfeature,likelihood_ratio);
+            if(tmp_likelihood.term.name.length()>2){
+                terms.add(tmp_likelihood);
+                termsMap.put(tmp_likelihood.term.name, tmp_likelihood);
+            }
+        }
+        
+        Collections.sort(terms, new Comparator<TermLikelihood>() {
+
+        public int compare(TermLikelihood o1, TermLikelihood o2) {
+            if(o1.likelihood_ratio>o2.likelihood_ratio) return -1;
+            if(o1.likelihood_ratio<o2.likelihood_ratio) return 1;
+            return 0;
+        }
+        });
+    }
+  */  
+    
     public void outputOrdered(String filename){
         BufferedWriter writer = null;
         try {
@@ -85,20 +199,73 @@ public class VocabularyComparator {
         }
     }
     
-    public void filterByRatio(double minRatio){
+    public void filterByRatioSFIM(double minRatio,Set<String> entities){
+        boolean selectAllHashtags=false;
+        String str_selectAllHashtags=Utilities.readProperty(eu.socialsensor.sfim.Constants.SELECT_ALL_HASHTAGS,eu.socialsensor.sfim.Constants.configuration.getConfig()).toLowerCase().trim();
+        if(str_selectAllHashtags.equals("true"))
+            selectAllHashtags=true;
+        else
+            selectAllHashtags=false;
+
+        boolean selectAllEntities=false;
+        String str_selectAllEntities=Utilities.readProperty(eu.socialsensor.sfim.Constants.SELECT_ALL_ENTITIES,eu.socialsensor.sfim.Constants.configuration.getConfig()).toLowerCase().trim();
+        
+        if(str_selectAllEntities.equals("true"))
+            selectAllEntities=true;
+        else
+            selectAllEntities=false;
+        
+        
         ArrayList<TermLikelihood> new_terms=new ArrayList<TermLikelihood>();
         HashMap<String,TermLikelihood> new_termsMap=new HashMap<String,TermLikelihood>();
         for(TermLikelihood tmp_tl:terms){
-            if(tmp_tl.likelihood_ratio>minRatio){
+            String term_string=tmp_tl.term.name;
+            if((tmp_tl.likelihood_ratio>=minRatio)||((selectAllEntities)&&(entities.contains(term_string)))||((selectAllHashtags)&&(term_string.startsWith("#")))){
                 new_terms.add(tmp_tl);
                 new_termsMap.put(tmp_tl.term.name, tmp_tl);
+            }
+            else{
+                
             }
         }
         terms=new_terms;
         termsMap=new_termsMap;
     }
 
+    public void filterByRatioGraph(double minRatio,Set<String> entities){
+        boolean selectAllHashtags=false;
+        String str_selectAllHashtags=Utilities.readProperty(eu.socialsensor.graphbased.Constants.SELECT_ALL_HASHTAGS,eu.socialsensor.graphbased.Constants.configuration.getConfig()).toLowerCase().trim();
+        if(str_selectAllHashtags.equals("true"))
+            selectAllHashtags=true;
+        else
+            selectAllHashtags=false;
 
+        boolean selectAllEntities=false;
+        String str_selectAllEntities=Utilities.readProperty(eu.socialsensor.graphbased.Constants.SELECT_ALL_ENTITIES,eu.socialsensor.graphbased.Constants.configuration.getConfig()).toLowerCase().trim();
+        
+        if(str_selectAllEntities.equals("true"))
+            selectAllEntities=true;
+        else
+            selectAllEntities=false;
+        
+        
+        ArrayList<TermLikelihood> new_terms=new ArrayList<TermLikelihood>();
+        HashMap<String,TermLikelihood> new_termsMap=new HashMap<String,TermLikelihood>();
+        for(TermLikelihood tmp_tl:terms){
+            String term_string=tmp_tl.term.name;
+            if((tmp_tl.likelihood_ratio>=minRatio)||((selectAllEntities)&&(entities.contains(term_string)))||((selectAllHashtags)&&(term_string.startsWith("#")))){
+                new_terms.add(tmp_tl);
+                new_termsMap.put(tmp_tl.term.name, tmp_tl);
+            }
+            else{
+                
+            }
+        }
+        terms=new_terms;
+        termsMap=new_termsMap;
+    }
+
+    
         public List<Dysco> getDyscosBySFIM(Map<String,Item> items_map){
             int i,j;
             List<Dysco> dyscos=new ArrayList<Dysco>();
@@ -125,7 +292,22 @@ public class VocabularyComparator {
                      
             
             System.out.println("Threshold : "+term_threshold);
-            filterByRatio(term_threshold);
+            
+            Collection<Item> items=items_map.values();
+            Set<String> entitiesSet=new HashSet<String>();
+            for(Item tmp_post:items){
+                List<Entity> entities=tmp_post.getEntities();
+                if(entities!=null)
+                    for(Entity entity:entities){
+                        String[] parts=entity.getName().split("\\s+");
+                        for(int kk=0;kk<parts.length;kk++)
+//                        for(int i=0;i<parts.length;i++)
+                            entitiesSet.add(parts[kk]);
+                    }
+            }
+            
+            
+            filterByRatioSFIM(term_threshold, entitiesSet);
             int n_terms=terms.size();
             Set<TermLikelihood> tmp_topic_terms;
             TermLikelihood working_term;
@@ -262,7 +444,7 @@ public class VocabularyComparator {
            return new_list;
     }
 
-    public Graph<TermLikelihood,MyLink> generateGraph(){
+    public Graph<TermLikelihood,MyLink> generateGraph(Set<String> entitiesSet){
             eu.socialsensor.topicdetection.MainConstants.TERM_SIMILARITY_METHODS USED_TERM_SIMILARITY_METHOD;
             String term_similarity_method_string=Utilities.readProperty(eu.socialsensor.graphbased.Constants.TERM_SIMILARITY_METHOD,eu.socialsensor.graphbased.Constants.configuration.getConfig());
             USED_TERM_SIMILARITY_METHOD=eu.socialsensor.topicdetection.MainConstants.TERM_SIMILARITY_METHODS.valueOf(term_similarity_method_string);
@@ -294,8 +476,7 @@ public class VocabularyComparator {
 //                term_threshold=terms.get((int) Math.round(Constants.TERM_SELECTION_TOP_PERCENTAGE*terms.size())+1).likelihood_ratio;
                 term_threshold=terms.get((int) Math.round(Double.parseDouble(Utilities.readProperty(eu.socialsensor.graphbased.Constants.TERM_SELECTION_TOP_PERCENTAGE,eu.socialsensor.graphbased.Constants.configuration.getConfig()))*terms.size())).likelihood_ratio;
             
-            
-            filterByRatio(term_threshold);
+            filterByRatioGraph(term_threshold, entitiesSet);
             int n_terms=terms.size();
             for(i=0;i<n_terms;i++)
                 termGraph.addVertex(terms.get(i));
@@ -427,7 +608,21 @@ public class VocabularyComparator {
         
       public List<Dysco> getDyscosGraphBased(Map<String,Item> items_map){
         Graph<TermLikelihood,MyLink> termGraph;
-        termGraph=generateGraph();
+        Collection<Item> items=items_map.values();
+        Set<String> entitiesSet=new HashSet<String>();
+        for(Item tmp_post:items){
+            List<Entity> entities=tmp_post.getEntities();
+            if(entities!=null)
+                for(Entity entity:entities){
+                    String[] parts=entity.getName().split("\\s+");
+                    for(int i=0;i<parts.length;i++)
+                        entitiesSet.add(parts[i]);
+                }
+        }
+
+        
+        
+        termGraph=generateGraph(entitiesSet);
         
         eu.socialsensor.topicdetection.MainConstants.TERM_SIMILARITY_METHODS USED_TERM_SIMILARITY_METHOD;
         String term_similarity_method_string=Utilities.readProperty(eu.socialsensor.graphbased.Constants.TERM_SIMILARITY_METHOD,eu.socialsensor.graphbased.Constants.configuration.getConfig());

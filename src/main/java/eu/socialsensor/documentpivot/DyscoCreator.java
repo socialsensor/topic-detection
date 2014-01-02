@@ -36,6 +36,7 @@ public class DyscoCreator {
     private boolean filter_user_mentions;
     private int boost_hashtags_factor;
     private int boost_entities_factor;
+    private boolean perform_full_indexing;
     
     
     public DyscoCreator() {
@@ -65,6 +66,14 @@ public class DyscoCreator {
         TweetPreprocessor.filterHashtags=filter_hashtags;
         TweetPreprocessor.filterURLs=filter_urls;
         TweetPreprocessor.filterUserMentions=filter_user_mentions;
+        
+        String str_perform_full_indexing=Utilities.readProperty(eu.socialsensor.documentpivot.Constants.PERFORM_FULL_INDEXING,eu.socialsensor.documentpivot.Constants.configuration.getConfig()).toLowerCase().trim();
+        if(str_perform_full_indexing.equals("true"))
+            perform_full_indexing=true;
+        else
+            perform_full_indexing=false;
+        
+        
     }
     
     
@@ -104,19 +113,22 @@ public class DyscoCreator {
         HashTables hashTables = new HashTables(L, k, d);
 
         Map<String, List<String>> clusters;
-        clusters = clusterTweets(items);
-        
+        if(perform_full_indexing)
+            clusters = clusterTweetsFull(items);
+        else
+            clusters = clusterTweets(items);
         
         eu.socialsensor.framework.common.domain.dysco.Dysco tmp_dysco = new Dysco();
         List<Dysco> dyscos = new ArrayList<Dysco>();
 
         for (Entry<String, List<String>> tmp_entry : clusters.entrySet()) {
-            if(tmp_entry.getValue().size()>=minimum_cluster_size){
+            if((tmp_entry.getValue().size()+1)>=minimum_cluster_size){
                 Dysco dysco = new Dysco();
                 dysco.setId(UUID.randomUUID().toString());
                 dysco.setTitle("");
                 Map<String,Double> keywords = new HashMap<String,Double>();
                 List<Item> assigned_posts = new ArrayList<Item>();
+                assigned_posts.add(postsList.get(tmp_entry.getKey()));
                 for (String tmp_str : tmp_entry.getValue()) {
                     tmp_post = postsList.get(tmp_str);
                     assigned_posts.add(tmp_post);
@@ -254,19 +266,78 @@ public class DyscoCreator {
         }
         return clusters;
     }
+
+    
+    /*
+     * This is the function that performs the clustering of items / tweets.
+     * It is called by createDyscos, which further processes the clusters produced
+     * by clusterTweets to generate DySCOs.
+     */
+    public Map<String, List<String>> clusterTweetsFull(List<Item> items) {
+        Map<String, List<String>> clusters = new HashMap<String, List<String>>();
+        int d = vocabulary.size();
+        HashTables hashTables = new HashTables(L, k, d);
+
+        //Get Entities Strings
+        Set<String> entitiesSet=new HashSet<String>();
+        for(Item tmp_post:items){
+            List<Entity> entities=tmp_post.getEntities();
+            if(entities!=null)
+                for(Entity entity:entities){
+                    String[] parts=entity.getName().split("\\s+");
+                    for(int i=0;i<parts.length;i++)
+                        entitiesSet.add(parts[i]);
+                }
+        }
+        VectorSpace.entities=entitiesSet;
+
+        
+        Map<String,String> itemToClusterMap=new HashMap<String,String>();
+        
+        try {
+            for(Item tmp_post:items){
+                List<String> tokens = TweetPreprocessor.Tokenize(tmp_post.getTitle());
+                VectorSpace vsm = new VectorSpace(tmp_post.getId(), tokens);
+                RankedObject nearest = hashTables.getNearest(vsm);
+                hashTables.add(vsm);
+
+                if (nearest == null || nearest.getSimilarity() < similarity_threshold) {
+                    clusters.put(vsm.id(), new ArrayList<String>());
+                    itemToClusterMap.put(vsm.id(), vsm.id());
+//                    hashTables.add(vsm);
+                } else {
+                    String matchingCluster=itemToClusterMap.get(nearest.getId());
+                    List<String> cluster = clusters.get(matchingCluster);
+                    if (cluster == null) {
+                        cluster = new ArrayList<String>();
+                        clusters.put(nearest.getId(), cluster);
+                    }
+                    itemToClusterMap.put(vsm.id(),matchingCluster);
+                    cluster.add(tmp_post.getId());
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return clusters;
+    }
+    
     
     public static void main(String[] args){
-        Vocabulary voc=new Vocabulary();
-        voc.load(true);
-        System.out.println("No of terms with stop words : "+voc.terms.size());
-        voc=new Vocabulary();
-        voc.load(false);
-        System.out.println("No of terms without stop words : "+voc.terms.size());
-        /*
         ItemDAO itemdao=new ItemDAOImpl("social1.atc.gr");
         System.out.println("Getting items");
-        List<Item> items=itemdao.getLatestItems(10);
-        System.out.println("Extracting items");
+        List<Item> items=itemdao.getLatestItems(1000);
+        
+        System.out.println("Filtering items");
+        List<Item> filtered=new ArrayList<Item>();
+        for(Item item:items){
+            if((item==null)||(item.getTitle()==null))
+                continue;
+            filtered.add(item);
+        }
+        items=filtered;
+        System.out.println("No of items post filtering: "+items.size());
+        System.out.println("Extracting entities");
         EntityDetection ent=new EntityDetection();
         ent.addEntitiesToItems(items);
         System.out.println("Getting dyscos");
@@ -284,8 +355,6 @@ public class DyscoCreator {
         System.out.println("No of retrieved items: "+items.size());
         System.out.println("No of grouped items : "+count);
         System.out.println("No of dyscos : "+dyscos.size());
-        * 
-        */
     }
     
 }
