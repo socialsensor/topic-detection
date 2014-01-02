@@ -10,8 +10,12 @@ import java.util.Iterator;
 import java.util.List;
 import eu.socialsensor.documentpivot.vocabulary.Vocabulary;
 import eu.socialsensor.documentpivot.vocabulary.VocabularyComparator;
+import eu.socialsensor.entitiesextractor.EntityDetection;
+import eu.socialsensor.framework.client.dao.ItemDAO;
+import eu.socialsensor.framework.client.dao.impl.ItemDAOImpl;
 import eu.socialsensor.framework.common.domain.Item;
 import eu.socialsensor.framework.common.domain.dysco.Dysco;
+import eu.socialsensor.framework.common.domain.dysco.Entity;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -77,6 +81,8 @@ public class DyscoCreator {
        vocabulary_reference=new Vocabulary();
        vocabulary_reference.load(true);
        System.out.println("Read reference vocabulary");
+
+       
        vocabulary_comparator=new VocabularyComparator(vocabulary_corpus,vocabulary_reference);
        vocabulary_comparator.outputOrdered(vocabulary_comparator.vocabulary_new_corpus.directory+vocabulary_comparator.vocabulary_new_corpus.filename_start+".vocabulary_ratios");
 
@@ -167,5 +173,41 @@ public class DyscoCreator {
         System.out.println("No of tweets retrieved: "+nTweets);
         return vocabulary;
     }
+
+    public static void main(String[] args){
+        ItemDAO itemdao=new ItemDAOImpl("social1.atc.gr");
+        System.out.println("Getting items");
+        List<Item> items=itemdao.getLatestItems(1000);
+        
+        System.out.println("Filtering items");
+        List<Item> filtered=new ArrayList<Item>();
+        for(Item item:items){
+            if((item==null)||(item.getTitle()==null))
+                continue;
+            filtered.add(item);
+        }
+        items=filtered;
+        System.out.println("No of items post filtering: "+items.size());
+        System.out.println("Extracting entities");
+        EntityDetection ent=new EntityDetection();
+        ent.addEntitiesToItems(items);
+        System.out.println("Getting dyscos");
+        eu.socialsensor.graphbased.DyscoCreator dc=new eu.socialsensor.graphbased.DyscoCreator();
+        List<Dysco> dyscos=dc.createDyscos(items);
+        int count=0;
+        System.out.println("Printing dyscos:");
+        for(Dysco dysco:dyscos){
+            System.out.println("--------------------");
+            List<Item> tmp_items=dysco.getItems();
+            count=count+tmp_items.size();
+            for(Item item:tmp_items)
+                System.out.println(item.getTitle());
+        }
+        System.out.println("No of retrieved items: "+items.size());
+        System.out.println("No of grouped items : "+count);
+        System.out.println("No of dyscos : "+dyscos.size());
+    }
+    
+    
     
 }

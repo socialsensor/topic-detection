@@ -12,6 +12,8 @@ import eu.socialsensor.documentpivot.*;
  * @author gpetkos
  */
 public class Constants {
+    public static String SELECT_ALL_HASHTAGS = "SELECT_ALL_HASHTAGS";
+    public static String SELECT_ALL_ENTITIES = "SELECT_ALL_ENTITIES";
     public static String TERM_SELECTION_METHOD="TERM_SELECTION_METHOD";
     public static String TERM_SELECTION_RATIO_THRESHOLD="TERM_SELECTION_RATIO_THRESHOLD";
     public static String TERM_SELECTION_TOP_N="TERM_SELECTION_TOP_N";
