@@ -49,7 +49,6 @@ public class DyscoCreator {
     }
     
     public static void main(String[] args){
-        System.out.println("SFIIIIIIIIIIIIIIM");
         ItemDAO itemdao=new ItemDAOImpl("social1.atc.gr");
         System.out.println("Getting items");
         List<Item> items=itemdao.getLatestItems(1000);
