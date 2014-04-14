@@ -274,21 +274,22 @@ public class TrendsLabeler {
     //THIS IS THE NEWEST VERSION 
     public static String findPopularTitle(Dysco dysco){
         List<Item> items=dysco.getItems();
-        Logger.getRootLogger().info("Title extractor : Examining case 1 (getting title from most popular url)");
+        /*
+//        Logger.getRootLogger().info("Title extractor : Examining case 1 (getting title from most popular url)");
         //Case 1, there are urls that point to a webpage that has a title
         //        pick the title of the most popular page.
         Map<String,Integer> url_counts=new HashMap<String,Integer>();
-        Logger.getRootLogger().info("Title extractor  (case 1) : finding most popular URL");
+//        Logger.getRootLogger().info("Title extractor  (case 1) : finding most popular URL");
         for(Item item_tmp:items){
             URL[] tmp_urls=item_tmp.getLinks();
-            Logger.getRootLogger().info("Title extractor  (case 1) : got list of urls will now expand");
+//            Logger.getRootLogger().info("Title extractor  (case 1) : got list of urls will now expand");
             if(tmp_urls!=null){
                 for(int i=0;i<tmp_urls.length;i++){
                     String resolved=null;
-                    Logger.getRootLogger().info("Title extractor  (case 1) : will now expand" + tmp_urls[i].toString());
+  //                  Logger.getRootLogger().info("Title extractor  (case 1) : will now expand" + tmp_urls[i].toString());
 //                    resolved = URLDeshortener.expandFast(tmp_urls[i].toString());
                     resolved = tmp_urls[i].toString();
-                    Logger.getRootLogger().info("Title extractor  (case 1) : expanded"+tmp_urls[i].toString());
+    //                Logger.getRootLogger().info("Title extractor  (case 1) : expanded"+tmp_urls[i].toString());
                     if(resolved!=null){
                         Integer count=url_counts.get(resolved);
                         if(count == null)
@@ -345,10 +346,10 @@ public class TrendsLabeler {
                 }
             }
         }
+*/        
         
         
-        
-        Logger.getRootLogger().info("Title extractor : Examining case 2 (message posted by listed user)");
+   //     Logger.getRootLogger().info("Title extractor : Examining case 2 (message posted by listed user)");
         Set<String> entities=new HashSet<String>();
         List<Entity> ents=dysco.getEntities();
         for(Entity ent:ents)
@@ -371,7 +372,7 @@ public class TrendsLabeler {
         }
         
         //Case 3, default certh procedure: finding most popular sentence in all tweets
-        Logger.getRootLogger().info("Title extractor : Examining case 3 (most popular sentence)");
+     //   Logger.getRootLogger().info("Title extractor : Examining case 3 (most popular sentence)");
         String candidate_title=findPopularTitleCERTH(dysco);
         candidate_title=StringEscapeUtils.unescapeHtml(candidate_title);
         if(candidate_title.endsWith(":"))
