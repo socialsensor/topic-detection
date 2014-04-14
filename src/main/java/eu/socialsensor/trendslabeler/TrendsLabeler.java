@@ -286,7 +286,8 @@ public class TrendsLabeler {
                 for(int i=0;i<tmp_urls.length;i++){
                     String resolved=null;
                     Logger.getRootLogger().info("Title extractor  (case 1) : will now expand" + tmp_urls[i].toString());
-                    resolved = URLDeshortener.expandFast(tmp_urls[i].toString());
+//                    resolved = URLDeshortener.expandFast(tmp_urls[i].toString());
+                    resolved = tmp_urls[i].toString();
                     Logger.getRootLogger().info("Title extractor  (case 1) : expanded"+tmp_urls[i].toString());
                     if(resolved!=null){
                         Integer count=url_counts.get(resolved);
