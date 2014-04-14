@@ -18,6 +18,8 @@ import eu.socialsensor.framework.common.domain.dysco.Dysco;
 import eu.socialsensor.framework.common.domain.dysco.Entity;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -87,7 +89,10 @@ public class DyscoCreator {
        vocabulary_comparator.outputOrdered(vocabulary_comparator.vocabulary_new_corpus.directory+vocabulary_comparator.vocabulary_new_corpus.filename_start+".vocabulary_ratios");
 
        System.out.println("Getting topics");
-       dyscos=vocabulary_comparator.getDyscosGraphBased(null);
+       Map<String,Item> data=new HashMap<String,Item>();
+       for(Item item:items)
+           data.put(item.getId(),item);
+       dyscos=vocabulary_comparator.getDyscosGraphBased(data);
 
        return dyscos;
     }
@@ -175,7 +180,12 @@ public class DyscoCreator {
     }
 
     public static void main(String[] args){
-        ItemDAO itemdao=new ItemDAOImpl("social1.atc.gr");
+        ItemDAO itemdao=null;
+        try {
+            itemdao = new ItemDAOImpl("social1.atc.gr");
+        } catch (Exception ex) {
+            Logger.getLogger(DyscoCreator.class.getName()).log(Level.SEVERE, null, ex);
+        }
         System.out.println("Getting items");
         List<Item> items=itemdao.getLatestItems(1000);
         

@@ -17,21 +17,30 @@ package eu.socialsensor.topicdetection;
 
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
-import eu.socialsensor.documentpivotentityandhashtagbased.DyscoCreator;
+//import eu.socialsensor.documentpivotentityandhashtagbased.DyscoCreator;
+//import eu.socialsensor.documentpivot.DyscoCreator;
+//import eu.socialsensor.sfim.DyscoCreator;
+//import eu.socialsensor.graphbased.DyscoCreator;
+import eu.socialsensor.lda.DyscoCreator;
 import eu.socialsensor.entitiesextractor.EntityDetection;
 import eu.socialsensor.framework.client.dao.ItemDAO;
 import eu.socialsensor.framework.client.dao.impl.ItemDAOImpl;
 import eu.socialsensor.framework.common.domain.Item;
 import eu.socialsensor.framework.common.domain.dysco.Dysco;
 import eu.socialsensor.keywordextractor.KeywordExtractor;
+import eu.socialsensor.trendslabeler.TrendsLabeler;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -100,11 +109,24 @@ public class Tester {
         
     }
    */
+
     
     public static void main(String[] args){
-        ItemDAO itemdao=new ItemDAOImpl("social1.atc.gr");
-        System.out.println("Getting items");
-        List<Item> items=itemdao.getLatestItems(1000);
+        try {
+            ItemDAO itemdao=new ItemDAOImpl("social1.atc.gr");
+        } catch (Exception ex) {
+            Logger.getLogger(Tester.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        System.out.println("Getting items from file");
+        
+        String filenameDocs="C:\\Documents and Settings\\gpetkos\\Desktop\\imc_descriptions_list_reformated.txt";
+        List<Item> items=loadItemsFromFilePlain(filenameDocs);
+        
+//        String filenameResults = "D:\\Topics\\document_pivot_0.0001.txt";
+//        String filenameResults = "D:\\Topics\\graph_based.txt";
+        String filenameResults = "D:\\Topics\\lda.txt";
+        //List<Item> items=itemdao.getLatestItems(1000);
+        
         System.out.println("Finding entities");
         EntityDetection ent=new EntityDetection();
         ent.addEntitiesToItems(items);
@@ -112,29 +134,58 @@ public class Tester {
         DyscoCreator dc=new DyscoCreator();
         List<Dysco> dyscos=dc.createDyscos(items);
         
-        /*
         System.out.println("");
         System.out.println("---- Results ----");
         System.out.println("No of Dyscos: "+dyscos.size());
         System.out.println("");
-        for(Dysco next_dysco:dyscos){
-            KeywordExtractor.extractKeywordsCERTH(next_dysco);
-            List<Item> dysco_items=next_dysco.getItems();
-            Map<String,Double> dysco_keywords=next_dysco.getKeywords();
-            System.out.println("===========");
-            System.out.println("Keywords:");
-            for(Entry<String,Double> next_keyword:dysco_keywords.entrySet())
-                System.out.print(next_keyword.getKey()+" ("+next_keyword.getValue() +") ");
-            System.out.println("");
-            System.out.println("Items:");
-            for(Item next_item:dysco_items)
-                System.out.println("- "+next_item.getTitle());
-            
-        }
-        
-        */
-        
+        try{
+            BufferedWriter bw=new BufferedWriter(new FileWriter(filenameResults));
+            bw.append("No of topics: "+dyscos.size());
+            bw.newLine();
+            bw.append("============");
+            bw.newLine();
+            for(Dysco next_dysco:dyscos){
+                next_dysco.setTitle(TrendsLabeler.findPopularTitle(next_dysco));
+                KeywordExtractor.extractKeywordsCERTH(next_dysco);
+                List<Item> dysco_items=next_dysco.getItems();
+                Map<String,Double> dysco_keywords=next_dysco.getKeywords();
+                System.out.println("===========");
+  //              System.out.println("Title:");
+    //            System.out.println(next_dysco.getTitle());
+                System.out.println("Keywords:");
+                for(Entry<String,Double> next_keyword:dysco_keywords.entrySet())
+    //                System.out.print(next_keyword.getKey()+" ("+next_keyword.getValue() +") ");
+                    System.out.print(next_keyword.getKey()+" ");
+                System.out.println("");
+                System.out.println("Items:");
+                for(Item next_item:dysco_items)
+                    System.out.println(next_item.getId()+"- "+next_item.getTitle());
+
+                bw.append("===========");
+                bw.newLine();
+                bw.append("Title:");
+                bw.newLine();
+                bw.append(next_dysco.getTitle());
+                bw.newLine();
+                bw.append("Keywords:");
+                bw.newLine();
+                for(Entry<String,Double> next_keyword:dysco_keywords.entrySet())
+    //                System.out.print(next_keyword.getKey()+" ("+next_keyword.getValue() +") ");
+                    bw.append(next_keyword.getKey()+" ");
+                bw.newLine();
+                bw.append("Items:");
+                bw.newLine();
+                for(Item next_item:dysco_items){
+                    bw.append(next_item.getId()+"- "+next_item.getTitle());
+                    bw.newLine();
+                }
                 
+                
+            }
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
     }
     
     public static List<Item> loadItemsFromFile(String filename){
@@ -164,6 +215,31 @@ public class Tester {
         return items;
     }
 
+    public static List<Item> loadItemsFromFilePlain(String filename){
+        List<Item> items=new ArrayList<Item>();
+        try{
+            BufferedReader br=new BufferedReader(new FileReader(filename));
+            String line=null;
+            int i=0;
+            while((line=br.readLine())!=null){
+                i=i+1;
+                if(line.trim()!=""){
+                    Item new_item=new Item();
+                    String[] parts=line.split("%%%");
+                    new_item.setId(parts[0]);
+                    new_item.setTitle(parts[1].replaceAll("\"",""));
+                    items.add(new_item);
+                }
+            }
+            br.close();
+        }
+        catch(Exception ex){
+            ex.printStackTrace();
+        }
+        return items;
+    }
+    
+    
     public static Long parseTwitterDate(String dateStr) {
         // parse Twitter date
         SimpleDateFormat dateFormat = new SimpleDateFormat(

@@ -33,6 +33,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.logging.Level;
 import org.apache.log4j.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -78,10 +79,15 @@ public class TrendsLabeler {
     public static final Set<String> BREAKING_ACCOUNTS = new HashSet<String>(Arrays.asList(BREAKING_ARRAY));    
     public static double url_threshold_similarity=0.2;
     
-    /*
     public static void main(String[] args) {
         
-        DyscoDAO dyscoDAO = new DyscoDAOImpl(); 
+        DyscoDAO dyscoDAO=null;
+        try {
+            dyscoDAO = new DyscoDAOImpl("social1.atc.gr","dyscos","items","MediaItems");
+        } catch (Exception ex) {
+            java.util.logging.Logger.getLogger(TrendsLabeler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+//        DyscoDAO dyscoDAO = new DyscoDAOImpl("social1.atc.gr"); 
         try{
 //        DyscoDAO dyscoDAO = new DyscoDAOImpl("social1.atc.gr","dyscos","items","MediaItems");        try{
             BufferedWriter bw=new BufferedWriter(new FileWriter("D:\\topicTitlesChanges.txt"));
@@ -153,6 +159,7 @@ public class TrendsLabeler {
             e.printStackTrace();
         }
     }
+    /*
     */
     
     static Extractor extr = new Extractor();
@@ -537,8 +544,14 @@ public class TrendsLabeler {
         Collections.sort(listOfRankedTitles, Collections.reverseOrder());
 
         List<RankedTitle> highRankedTokens = filterLowRankTokens(listOfRankedTitles);
+        
         if(highRankedTokens.size() > 0){
-            return filterByLevensteinSimilarity(highRankedTokens);
+//            return filterByLevensteinSimilarity(highRankedTokens);
+            List<String> cands=new ArrayList<String>();
+            for(RankedTitle cand:highRankedTokens)
+                cands.add(cand.getTitle());
+            return cands;
+//            return highRankedTokens;
         }else{
             return new ArrayList<String>();
         }
@@ -574,6 +587,9 @@ public class TrendsLabeler {
         if(tokenTitles.size() < 2){
             return finalTitles;
         }
+        
+        
+        
 
         AbstractStringMetric metric = new Levenshtein();
         for(int i = 1; i < tokenTitles.size(); i++){
@@ -889,7 +905,10 @@ public class TrendsLabeler {
         String[] parts=text.split(Extractor.urlRegExp);
         List<String> sentences=new ArrayList<String>();
         
-        for(int i=0;i<parts.length;i++){
+//        for(int i=0;i<parts.length;i++){
+        int limit=10;
+        if(limit>parts.length) limit=parts.length;
+        for(int i=0;i<limit;i++){
 //            parts[i]=text.replace("http://*&hellip;","");
             String text_cleaned=extractor.cleanText(parts[i]);
 //            List<String> sentences_tmp=new ArrayList<String>();

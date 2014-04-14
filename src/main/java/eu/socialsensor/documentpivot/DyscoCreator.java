@@ -14,6 +14,8 @@ import eu.socialsensor.framework.client.dao.impl.ItemDAOImpl;
 import eu.socialsensor.framework.common.domain.dysco.Entity;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -324,7 +326,13 @@ public class DyscoCreator {
     
     
     public static void main(String[] args){
-        ItemDAO itemdao=new ItemDAOImpl("social1.atc.gr");
+        
+        ItemDAO itemdao=null;
+        try {
+            itemdao = new ItemDAOImpl("social1.atc.gr");
+        } catch (Exception ex) {
+            Logger.getLogger(DyscoCreator.class.getName()).log(Level.SEVERE, null, ex);
+        }
         System.out.println("Getting items");
         List<Item> items=itemdao.getLatestItems(1000);
         

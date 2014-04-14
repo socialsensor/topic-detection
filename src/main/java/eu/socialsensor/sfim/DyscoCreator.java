@@ -16,6 +16,8 @@ import eu.socialsensor.framework.client.dao.ItemDAO;
 import eu.socialsensor.framework.client.dao.impl.ItemDAOImpl;
 import eu.socialsensor.framework.common.domain.dysco.Entity;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -45,11 +47,21 @@ public class DyscoCreator {
         vocabulary_comparator.outputOrdered(vocabulary_comparator.vocabulary_new_corpus.directory+vocabulary_comparator.vocabulary_new_corpus.filename_start+".vocabulary_ratios");
         System.out.println("Getting topics");
         List<Dysco> dyscos=vocabulary_comparator.getDyscosBySFIM(items_map);
-        return dyscos;
+        List<Dysco> finalDyscos=new ArrayList<Dysco>();
+        for(Dysco dysco:dyscos){
+            if(dysco.getKeywords().size()<10)
+                finalDyscos.add(dysco);
+        }
+        return finalDyscos;
     }
     
     public static void main(String[] args){
-        ItemDAO itemdao=new ItemDAOImpl("social1.atc.gr");
+        ItemDAO itemdao=null;
+        try {
+            itemdao = new ItemDAOImpl("social1.atc.gr");
+        } catch (Exception ex) {
+            Logger.getLogger(DyscoCreator.class.getName()).log(Level.SEVERE, null, ex);
+        }
         System.out.println("Getting items");
         List<Item> items=itemdao.getLatestItems(1000);
         
