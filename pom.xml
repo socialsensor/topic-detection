@@ -190,7 +190,12 @@
         <dependency>
             <groupId>eu.socialsensor</groupId>
             <artifactId>trends-labeler</artifactId>
-            <version>0.2</version>
+            <version>0.2-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongo-java-driver</artifactId>
+            <version>2.11.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -201,14 +206,6 @@
     
     <repositories>
         <repository>
-            <id>clojars.org</id>
-            <url>http://clojars.org/repo</url>
-        </repository>
-        <repository>
-            <id>msel.releases</id>
-            <url>http://maven.mse.jhu.edu/m2repository</url>
-        </repository>
-        <repository>
             <id>sonatype-nexus-snapshots</id>
             <name>Sonatype Nexus Snapshots</name>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
@@ -218,6 +215,14 @@
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
+        </repository>
+        <repository>
+            <id>clojars.org</id>
+            <url>http://clojars.org/repo</url>
+        </repository>
+        <repository>
+            <id>msel.releases</id>
+            <url>http://maven.mse.jhu.edu/m2repository</url>
         </repository>
     </repositories>
     <pluginRepositories />
