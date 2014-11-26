@@ -62,13 +62,13 @@
         <dependency>
             <groupId>eu.socialsensor</groupId>
             <artifactId>socialsensor-framework-common</artifactId>
-            <version>0.2-SNAPSHOT</version>
+            <version>0.2.2</version>
         </dependency>
         
         <dependency>
             <groupId>eu.socialsensor</groupId>
             <artifactId>socialsensor-framework-client</artifactId>
-            <version>0.2-SNAPSHOT</version>
+            <version>0.2.2</version>
 <!--
             <exclusions>
                 <exclusion>
@@ -141,11 +141,31 @@
             <groupId>eu.socialsensor</groupId>
             <artifactId>EntitiesExtractor</artifactId>
             <version>1.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+		            <artifactId>socialsensor-framework-common</artifactId>
+		            <groupId>eu.socialsensor</groupId>
+                </exclusion>
+                <exclusion>
+		            <artifactId>socialsensor-framework-client</artifactId>
+		            <groupId>eu.socialsensor</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>eu.socialsensor</groupId>
             <artifactId>KeywordExtractor</artifactId>
             <version>1.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+		            <artifactId>socialsensor-framework-common</artifactId>
+		            <groupId>eu.socialsensor</groupId>
+                </exclusion>
+                <exclusion>
+		            <artifactId>socialsensor-framework-client</artifactId>
+		            <groupId>eu.socialsensor</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -191,6 +211,16 @@
             <groupId>eu.socialsensor</groupId>
             <artifactId>trends-labeler</artifactId>
             <version>0.2-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+		            <artifactId>socialsensor-framework-common</artifactId>
+		            <groupId>eu.socialsensor</groupId>
+                </exclusion>
+                <exclusion>
+		            <artifactId>socialsensor-framework-client</artifactId>
+		            <groupId>eu.socialsensor</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.mongodb</groupId>
@@ -221,14 +251,20 @@
             <url>http://clojars.org/repo</url>
         </repository>
         <repository>
+	        <!-- 
             <id>msel.releases</id>
             <url>http://maven.mse.jhu.edu/m2repository</url>
+             -->
+            <id>ala.releases</id>
+            <url>http://maven.ala.org.au/repository</url>
         </repository>
     </repositories>
     <pluginRepositories />
     
     <build>
         <plugins>
+        <!-- 
+        --> 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

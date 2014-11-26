@@ -21,33 +21,23 @@ import com.mongodb.util.JSON;
 //import eu.socialsensor.documentpivot.DyscoCreator;
 //import eu.socialsensor.sfim.DyscoCreator;
 //import eu.socialsensor.graphbased.DyscoCreator;
-import eu.socialsensor.lda.DyscoCreator;
-import eu.socialsensor.entitiesextractor.EntityDetection;
-import eu.socialsensor.framework.client.dao.ItemDAO;
-import eu.socialsensor.framework.client.dao.impl.ItemDAOImpl;
+import eu.socialsensor.documentpivot.Utilities;
 import eu.socialsensor.framework.common.domain.Item;
 import eu.socialsensor.framework.common.domain.dysco.Dysco;
-import eu.socialsensor.keywordextractor.KeywordExtractor;
-import eu.socialsensor.trendslabeler.TrendsLabeler;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
  * @author gpetkos
  */
 public class Tester {
-    /*
     public static void main(String[] args){
         BasicConfiguration mainConfig=new MainConfiguration();
         mainConfig.getConfig();
@@ -108,7 +98,7 @@ public class Tester {
         }
         
     }
-   */
+    /*
 
     
     public static void main(String[] args){
@@ -187,6 +177,7 @@ public class Tester {
             e.printStackTrace();
         }
     }
+   */
     
     public static List<Item> loadItemsFromFile(String filename){
         List<Item> items=new ArrayList<Item>();
